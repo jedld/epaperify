@@ -70,6 +70,7 @@ void EPD_2IN7_V2_Init(void)
 VALUE clear() {
     EPD_2IN7B_V2_Clear();
     DEV_Delay_ms(500);
+    return Qnil;
 }
 
 VALUE init_paper() {
@@ -86,34 +87,61 @@ typedef struct epaper_canvas {
     UBYTE *red_image;
     int width;
     int height;
+    int color;
 } ecanvas;
 
 void free_canvas(ecanvas *canvas);
 
 
-VALUE draw_string(VALUE self, VALUE message) {
+VALUE draw_string(VALUE self, VALUE xval, VALUE yval, VALUE message) {
     ecanvas *canvas;
     char *our_c_string = StringValueCStr(message);
-    printf("got message ");
 
-    Data_Get_Struct(canvas, ecanvas, self);
-    Paint_SelectImage(canvas->black_image);
-    Paint_SelectImage(canvas->red_image);
-    Paint_DrawString_EN(10, 20, our_c_string, &Font12, WHITE, BLACK);
+    Data_Get_Struct(self, ecanvas, canvas);
+    if (canvas->color == 0) {
+       Paint_SelectImage(canvas->black_image);
+    } else {
+        Paint_SelectImage(canvas->red_image);
+    }
+
+    int x = NUM2INT(xval);
+    int y = NUM2INT(yval);
+    Paint_DrawString_EN(x, y, our_c_string, &Font12, WHITE, BLACK);
     return Qnil;
 }
 
 VALUE show(VALUE self) {
     ecanvas *canvas;
-    Data_Get_Struct(canvas, ecanvas, self);
+    Data_Get_Struct(self, ecanvas, canvas);
     EPD_2IN7B_V2_Display(canvas->black_image, canvas->red_image);
     return Qnil;
 }
 
-static VALUE create_canvas(VALUE klass) {
+VALUE color(VALUE self, VALUE color) {
+    ecanvas *canvas;
+    Data_Get_Struct(self, ecanvas, canvas);
+    canvas->color = NUM2INT(color);
+    return Qnil;
+}
+
+VALUE screen_sleep(VALUE self) {
+    ecanvas *canvas;
+    Data_Get_Struct(self, ecanvas, canvas);
+    EPD_2IN7B_V2_Sleep();
+    DEV_Delay_ms(2000);//important, at least 2s
+    // close 5V
+    printf("close 5V, Module enters 0 power consumption ...\r\n");
+    DEV_Module_Exit(); 
+    return Qnil;
+}
+
+VALUE allocate(VALUE klass) {
     ecanvas *canvas = (ecanvas*) malloc(sizeof(ecanvas));
+
+    printf("allocating canvas");
     canvas->width = EPD_2IN7B_V2_WIDTH;
     canvas->height = EPD_2IN7B_V2_HEIGHT;
+    canvas->color = 0;
     UWORD Imagesize = (( canvas->width % 8 == 0)? ( canvas->width / 8 ): ( canvas->width / 8 + 1)) * canvas->height;
     if((canvas->black_image = (UBYTE *)malloc(Imagesize)) == NULL) {
         printf("Failed to apply for black memory...\r\n");
@@ -125,6 +153,13 @@ static VALUE create_canvas(VALUE klass) {
         return -1;
     }
     printf("canvas allocated");
+    (canvas->black_image, EPD_2IN7B_V2_WIDTH, EPD_2IN7B_V2_HEIGHT, 0, WHITE);
+    Paint_NewImage(canvas->red_image, EPD_2IN7B_V2_WIDTH, EPD_2IN7B_V2_HEIGHT, 0, WHITE);
+    Paint_SelectImage(canvas->black_image);
+    Paint_Clear(WHITE);
+    Paint_SelectImage(canvas->red_image);
+    Paint_Clear(WHITE);
+
     return Data_Wrap_Struct(klass, 0, free_canvas, canvas);
 }
 
@@ -137,11 +172,13 @@ void free_canvas(ecanvas *canvas) {
 
 void Init_epaperify() {
     VALUE canvasKlass;
-    
     VALUE mod = rb_define_module("Epaperify");
-    canvasKlass = rb_define_class_under(mod, "Canvas", rb_cObject);
-    rb_define_alloc_func(canvasKlass, create_canvas);
+    canvasKlass = rb_define_class_under(mod, "PaperCanvas", rb_cObject);
+    rb_define_alloc_func(canvasKlass, allocate);
     rb_define_method(canvasKlass, "init_paper", init_paper, 0);
-    rb_define_method(canvasKlass, "draw_string", draw_string, 1);
+    rb_define_method(canvasKlass, "draw_string", draw_string, 3);
     rb_define_method(canvasKlass, "show", show, 0);
+    rb_define_method(canvasKlass, "color", color, 1);
+    rb_define_method(canvasKlass, "sleep", screen_sleep, 0);
+    rb_define_method(canvasKlass, "clear", clear, 0);
 }
