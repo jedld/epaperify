@@ -84,7 +84,7 @@ debugflags = -ggdb3
 warnflags = -Wall -Wextra -Wdeprecated-declarations -Wduplicated-cond -Wimplicit-function-declaration -Wimplicit-int -Wmisleading-indentation -Wpointer-arith -Wwrite-strings -Wimplicit-fallthrough=0 -Wmissing-noreturn -Wno-cast-function-type -Wno-constant-logical-operand -Wno-long-long -Wno-missing-field-initializers -Wno-overlength-strings -Wno-packed-bitfield-compat -Wno-parentheses-equality -Wno-self-assign -Wno-tautological-compare -Wno-unused-parameter -Wno-unused-value -Wsuggest-attribute=format -Wsuggest-attribute=noreturn -Wunused-variable
 cppflags = 
 CCDLFLAGS = -fPIC
-CFLAGS   = $(CCDLFLAGS) -g -O2 -ffile-prefix-map=/build/ruby2.7-L7Em9C/ruby2.7-2.7.2=. -fstack-protector-strong -Wformat -Werror=format-security -fPIC $(ARCH_FLAG)
+CFLAGS   = $(CCDLFLAGS) -g -O2 -ffile-prefix-map=/build/ruby2.7-L7Em9C/ruby2.7-2.7.2=. -fstack-protector-strong -Wformat -Werror=format-security -fPIC -D USE_BCM2835_LIB -D RPI $(ARCH_FLAG)
 INCFLAGS = -I. -I$(arch_hdrdir) -I$(hdrdir)/ruby/backward -I$(hdrdir) -I$(srcdir)
 DEFS     = 
 CPPFLAGS = -DRUBY_EXTCONF_H=\"$(RUBY_EXTCONF_H)\" -Wdate-time -D_FORTIFY_SOURCE=2 $(DEFS) $(cppflags)
@@ -135,16 +135,16 @@ DISTCLEANDIRS =
 
 extout = 
 extout_prefix = 
-target_prefix = /epaper
+target_prefix = /epaperify
 LOCAL_LIBS = -lbcm2835 -lm 
 LIBS = $(LIBRUBYARG_SHARED)  -lm   -lc
-ORIG_SRCS = DEV_Config.c EPD_2in7b_V2.c GUI_BMPfile.c GUI_Paint.c epaper.c
+ORIG_SRCS = DEV_Config.c EPD_2in7b_V2.c GUI_BMPfile.c GUI_Paint.c epaperify.c font12.c font12CN.c font16.c font20.c font24.c font24CN.c font8.c
 SRCS = $(ORIG_SRCS) 
-OBJS = DEV_Config.o EPD_2in7b_V2.o GUI_BMPfile.o GUI_Paint.o epaper.o
-HDRS = $(srcdir)/EPD_2in7b_V2.h $(srcdir)/GUI_BMPfile.h $(srcdir)/DEV_Config.h $(srcdir)/extconf.h $(srcdir)/Debug.h $(srcdir)/GUI_Paint.h
+OBJS = DEV_Config.o EPD_2in7b_V2.o GUI_BMPfile.o GUI_Paint.o epaperify.o font12.o font12CN.o font16.o font20.o font24.o font24CN.o font8.o
+HDRS = $(srcdir)/EPD_2in7b_V2.h $(srcdir)/GUI_BMPfile.h $(srcdir)/DEV_Config.h $(srcdir)/extconf.h $(srcdir)/Debug.h $(srcdir)/fonts.h $(srcdir)/GUI_Paint.h
 LOCAL_HDRS = 
-TARGET = epaper
-TARGET_NAME = epaper
+TARGET = epaperify
+TARGET_NAME = epaperify
 TARGET_ENTRY = Init_$(TARGET_NAME)
 DLLIB = $(TARGET).so
 EXTSTATIC = 
@@ -186,7 +186,7 @@ distclean: clean distclean-so distclean-static distclean-rb-default distclean-rb
 realclean: distclean
 install: install-so install-rb
 
-install-so: $(DLLIB) $(TIMESTAMP_DIR)/.sitearchdir.-.epaper.time
+install-so: $(DLLIB) $(TIMESTAMP_DIR)/.sitearchdir.-.epaperify.time
 	$(INSTALL_PROG) $(DLLIB) $(RUBYARCHDIR)
 clean-static::
 	-$(Q)$(RM) $(STATIC_LIB)
@@ -198,7 +198,7 @@ do-install-rb:
 do-install-rb-default:
 pre-install-rb-default:
 	@$(NULLCMD)
-$(TIMESTAMP_DIR)/.sitearchdir.-.epaper.time:
+$(TIMESTAMP_DIR)/.sitearchdir.-.epaperify.time:
 	$(Q) $(MAKEDIRS) $(@D) $(RUBYARCHDIR)
 	$(Q) $(TOUCH) $@
 
@@ -257,7 +257,7 @@ site-install-rb: install-rb
 	$(Q) $(CC) $(INCFLAGS) $(CPPFLAGS) $(CFLAGS) $(COUTFLAG)$@ -S $(CSRCFLAG)$<
 
 $(TARGET_SO): $(OBJS) Makefile
-	$(ECHO) linking shared-object epaper/$(DLLIB)
+	$(ECHO) linking shared-object epaperify/$(DLLIB)
 	-$(Q)$(RM) $(@)
 	$(Q) $(LDSHARED) -o $@ $(OBJS) $(LIBPATH) $(DLDFLAGS) $(LOCAL_LIBS) $(LIBS)
 

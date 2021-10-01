@@ -286,10 +286,12 @@ UBYTE DEV_Module_Init(void)
 {
     printf("/***********************************/ \r\n");
 	if(DEV_Equipment_Testing() < 0) {
+		printf("equip test failed!");
 		return 1;
 	}
 #ifdef RPI
 #ifdef USE_BCM2835_LIB
+    printf("trying out bcm2835");
 	if(!bcm2835_init()) {
 		printf("bcm2835 init failed  !!! \r\n");
 		return 1;

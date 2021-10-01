@@ -48,6 +48,10 @@
 #ifndef _DEV_CONFIG_H_
 #define _DEV_CONFIG_H_
 
+
+#define USE_BCM2835_LIB 1
+#define RPI 1
+
 #include <stdint.h>
 #include <stdio.h>
 #include <unistd.h>

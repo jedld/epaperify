@@ -1,4 +1,5 @@
 #include <ruby.h>
+
 #include "extconf.h"
 #include <stdlib.h>
 #include <signal.h> 
@@ -9,10 +10,6 @@
 
 void EPD_2IN7_V2_Init(void)
 {
-    EPD_2IN7B_V2_Init();
-	EPD_2IN7B_V2_Clear();
-    DEV_Delay_ms(500);
-
     UBYTE *BlackImage, *RedImage;
     UWORD Imagesize = ((EPD_2IN7B_V2_WIDTH % 8 == 0)? (EPD_2IN7B_V2_WIDTH / 8 ): (EPD_2IN7B_V2_WIDTH / 8 + 1)) * EPD_2IN7B_V2_HEIGHT;
     if((BlackImage = (UBYTE *)malloc(Imagesize)) == NULL) {
@@ -70,12 +67,81 @@ void EPD_2IN7_V2_Init(void)
     DEV_Module_Exit(); 
 }
 
-VALUE init_paper() {
-     printf("init paper");
-     DEV_Module_Init();
+VALUE clear() {
+    EPD_2IN7B_V2_Clear();
+    DEV_Delay_ms(500);
 }
 
-void Init_epaper() {
+VALUE init_paper() {
+     printf("init epaper");
+     if(DEV_Module_Init()!=0){
+        return -1;
+    }
+    EPD_2IN7B_V2_Init();
+}
+
+
+typedef struct epaper_canvas {
+    UBYTE *black_image;
+    UBYTE *red_image;
+    int width;
+    int height;
+} ecanvas;
+
+void free_canvas(ecanvas *canvas);
+
+
+VALUE draw_string(VALUE self, VALUE message) {
+    ecanvas *canvas;
+    char *our_c_string = StringValueCStr(message);
+    printf("got message ");
+
+    Data_Get_Struct(canvas, ecanvas, self);
+    Paint_SelectImage(canvas->black_image);
+    Paint_SelectImage(canvas->red_image);
+    Paint_DrawString_EN(10, 20, our_c_string, &Font12, WHITE, BLACK);
+    return Qnil;
+}
+
+VALUE show(VALUE self) {
+    ecanvas *canvas;
+    Data_Get_Struct(canvas, ecanvas, self);
+    EPD_2IN7B_V2_Display(canvas->black_image, canvas->red_image);
+    return Qnil;
+}
+
+static VALUE create_canvas(VALUE klass) {
+    ecanvas *canvas = (ecanvas*) malloc(sizeof(ecanvas));
+    canvas->width = EPD_2IN7B_V2_WIDTH;
+    canvas->height = EPD_2IN7B_V2_HEIGHT;
+    UWORD Imagesize = (( canvas->width % 8 == 0)? ( canvas->width / 8 ): ( canvas->width / 8 + 1)) * canvas->height;
+    if((canvas->black_image = (UBYTE *)malloc(Imagesize)) == NULL) {
+        printf("Failed to apply for black memory...\r\n");
+        return -1;
+    }
+
+    if((canvas->red_image = (UBYTE *)malloc(Imagesize)) == NULL) {
+        printf("Failed to apply for red memory...\r\n");
+        return -1;
+    }
+    printf("canvas allocated");
+    return Data_Wrap_Struct(klass, 0, free_canvas, canvas);
+}
+
+void free_canvas(ecanvas *canvas) {
+    printf("canvas free");
+    free(canvas->black_image);
+    free(canvas->red_image);
+    free(canvas);
+}
+
+void Init_epaperify() {
+    VALUE canvasKlass;
+    
     VALUE mod = rb_define_module("Epaperify");
-    rb_define_module_function(mod, "init_paper", init_paper, 0);
+    canvasKlass = rb_define_class_under(mod, "Canvas", rb_cObject);
+    rb_define_alloc_func(canvasKlass, create_canvas);
+    rb_define_method(canvasKlass, "init_paper", init_paper, 0);
+    rb_define_method(canvasKlass, "draw_string", draw_string, 1);
+    rb_define_method(canvasKlass, "show", show, 0);
 }
