@@ -558,7 +558,7 @@ parameter:
     Color_Background : Select the background color
 ******************************************************************************/
 void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
-                         sFONT* Font, UWORD Color_Foreground, UWORD Color_Background)
+                         sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, CURSOR *cursor)
 {
     UWORD Xpoint = Xstart;
     UWORD Ypoint = Ystart;
@@ -582,8 +582,13 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
         }
 
         if (*pString == '\n') {
-            Xpoint = Xstart;
             Ypoint += Font->Height;
+            pString ++;
+            continue;
+        }
+
+        if (*pString == '\r') {
+            Xpoint = Xstart;
             pString ++;
             continue;
         }
@@ -596,6 +601,9 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
         //The next word of the abscissa increases the font of the broadband
         Xpoint += Font->Width;
     }
+
+    cursor->Xcursor = Xpoint;
+    cursor->Ycursor = Ypoint;
 }
 
 
@@ -713,6 +721,8 @@ void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, int32_t Nummber,
     int16_t Num_Bit = 0, Str_Bit = 0;
     uint8_t Str_Array[ARRAY_LEN] = {0}, Num_Array[ARRAY_LEN] = {0};
     uint8_t *pStr = Str_Array;
+    CURSOR cursor;
+
 
     if (Xpoint > Paint.Width || Ypoint > Paint.Height) {
         Debug("Paint_DisNum Input exceeds the normal display range\r\n");
@@ -734,7 +744,7 @@ void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, int32_t Nummber,
     }
 
     //show
-    Paint_DrawString_EN(Xpoint, Ypoint, (const char*)pStr, Font, Color_Background, Color_Foreground);
+    Paint_DrawString_EN(Xpoint, Ypoint, (const char*)pStr, Font, Color_Background, Color_Foreground, &cursor);
 }
 
 /******************************************************************************

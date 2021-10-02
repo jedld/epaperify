@@ -1,13 +1,12 @@
 /*****************************************************************************
-* | File      	:   EPD_2in7b_V2.h
+* | File      	:   EPD_5in83_V2.h
 * | Author      :   Waveshare team
-* | Function    :   2.7inch e-paper b V2
+* | Function    :   5.83inch e-paper V2
 * | Info        :
 *----------------
 * |	This version:   V1.0
-* | Date        :   2020-10-20
+* | Date        :   2020-11-23
 * | Info        :
-* -----------------------------------------------------------------------------
 #
 # Permission is hereby granted, free of charge, to any person obtaining a copy
 # of this software and associated documnetation files (the "Software"), to deal
@@ -28,19 +27,18 @@
 # THE SOFTWARE.
 #
 ******************************************************************************/
-#ifndef __EPD_2IN7B_V2_H_
-#define __EPD_2IN7B_V2_H_
+#ifndef __EPD_5in83_V2_H_
+#define __EPD_5in83_V2_H_
 
 #include "DEV_Config.h"
 
 // Display resolution
-#define EPD_2IN7B_V2_WIDTH       176
-#define EPD_2IN7B_V2_HEIGHT      264
+#define EPD_5in83_V2_WIDTH       648
+#define EPD_5in83_V2_HEIGHT      480
 
-void EPD_2IN7B_V2_Init(void);
-void EPD_2IN7B_V2_Clear(void);
-void EPD_2IN7B_V2_Display(UBYTE *Imageblack, UBYTE *Imagered);
-void EPD_2IN7B_V2_Sleep(void);
-void EPD_2IN7B_V2_SetWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend);
+void EPD_5in83_V2_Init(void);
+void EPD_5in83_V2_Clear(void);
+void EPD_5in83_V2_Display(UBYTE *Image);
+void EPD_5in83_V2_Sleep(void);
 
 #endif

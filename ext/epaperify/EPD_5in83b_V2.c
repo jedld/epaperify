@@ -1,16 +1,15 @@
 /*****************************************************************************
-* | File      	:   EPD_2in7b_V2.c
+* | File      	:	EPD_5in83b_V2.c
 * | Author      :   Waveshare team
-* | Function    :   2.7inch e-paper b V2
+* | Function    :   Electronic paper driver
 * | Info        :
 *----------------
 * |	This version:   V1.0
-* | Date        :   2020-10-20
+* | Date        :   2020-07-04
 * | Info        :
-* -----------------------------------------------------------------------------
-#
+******************************************************************************
 # Permission is hereby granted, free of charge, to any person obtaining a copy
-# of this software and associated documnetation files (the "Software"), to deal
+# of this software and associated documnetation files(the "Software"), to deal
 # in the Software without restriction, including without limitation the rights
 # to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
 # copies of the Software, and to permit persons to  whom the Software is
@@ -28,20 +27,19 @@
 # THE SOFTWARE.
 #
 ******************************************************************************/
-#include "EPD_2in7b_V2.h"
+#include "EPD_5in83b_V2.h"
 #include "Debug.h"
-
 
 /******************************************************************************
 function :	Software reset
 parameter:
 ******************************************************************************/
-static void EPD_2IN7B_V2_Reset(void)
+static void EPD_5IN83B_V2_Reset(void)
 {
     DEV_Digital_Write(EPD_RST_PIN, 1);
     DEV_Delay_ms(200);
     DEV_Digital_Write(EPD_RST_PIN, 0);
-    DEV_Delay_ms(2);
+    DEV_Delay_ms(1);
     DEV_Digital_Write(EPD_RST_PIN, 1);
     DEV_Delay_ms(200);
 }
@@ -51,7 +49,7 @@ function :	send command
 parameter:
      Reg : Command register
 ******************************************************************************/
-static void EPD_2IN7B_V2_SendCommand(UBYTE Reg)
+static void EPD_5IN83B_V2_SendCommand(UBYTE Reg)
 {
     DEV_Digital_Write(EPD_DC_PIN, 0);
     DEV_Digital_Write(EPD_CS_PIN, 0);
@@ -64,10 +62,11 @@ function :	send data
 parameter:
     Data : Write data
 ******************************************************************************/
-static void EPD_2IN7B_V2_SendData(UBYTE Data)
+static void EPD_5IN83B_V2_SendData(UBYTE Data)
 {
-    DEV_Digital_Write(EPD_DC_PIN, 1);
+    
     DEV_Digital_Write(EPD_CS_PIN, 0);
+    DEV_Digital_Write(EPD_DC_PIN, 1);
     DEV_SPI_WriteByte(Data);
     DEV_Digital_Write(EPD_CS_PIN, 1);
 }
@@ -76,136 +75,130 @@ static void EPD_2IN7B_V2_SendData(UBYTE Data)
 function :	Wait until the busy_pin goes LOW
 parameter:
 ******************************************************************************/
-static void EPD_2IN7B_V2_ReadBusy(void)
+void EPD_5IN83B_V2_WaitUntilIdle(void)
 {
     Debug("e-Paper busy\r\n");
-    while(DEV_Digital_Read(EPD_BUSY_PIN) == 1) {      //1: busy, 0: idle
-        DEV_Delay_ms(10);
-    }    
+	UBYTE busy;
+	do
+	{
+		EPD_5IN83B_V2_SendCommand(0x71);
+		busy = DEV_Digital_Read(EPD_BUSY_PIN);
+		busy =!(busy & 0x01);
+	}
+	while(busy);   
+	DEV_Delay_ms(200);     
     Debug("e-Paper busy release\r\n");
 }
 
-static void EPD_2IN7B_V2_TurnOnDisplay(void)
-{
-	EPD_2IN7B_V2_SendCommand(0x20); 
-	EPD_2IN7B_V2_ReadBusy();
-}
-
 /******************************************************************************
-function :	Setting the display window
+function :	Turn On Display
 parameter:
 ******************************************************************************/
-void EPD_2IN7B_V2_SetWindows(UWORD Xstart, UWORD Ystart, UWORD Xend, UWORD Yend)
+static void EPD_5IN83B_V2_TurnOnDisplay(void)
 {
-    EPD_2IN7B_V2_SendCommand(0x44); // SET_RAM_X_ADDRESS_START_END_POSITION
-    EPD_2IN7B_V2_SendData((Xstart>>3) & 0xFF);
-    EPD_2IN7B_V2_SendData((Xend>>3) & 0xFF);
-	
-    EPD_2IN7B_V2_SendCommand(0x45); // SET_RAM_Y_ADDRESS_START_END_POSITION
-    EPD_2IN7B_V2_SendData(Ystart & 0xFF);
-    EPD_2IN7B_V2_SendData((Ystart >> 8) & 0xFF);
-    EPD_2IN7B_V2_SendData(Yend & 0xFF);
-    EPD_2IN7B_V2_SendData((Yend >> 8) & 0xFF);
-}
-
-/******************************************************************************
-function :	Set Cursor
-parameter:
-******************************************************************************/
-static void EPD_2IN7B_V2_SetCursor(UWORD Xstart, UWORD Ystart)
-{
-    EPD_2IN7B_V2_SendCommand(0x4E); // SET_RAM_X_ADDRESS_COUNTER
-    EPD_2IN7B_V2_SendData(Xstart & 0xFF);
-
-    EPD_2IN7B_V2_SendCommand(0x4F); // SET_RAM_Y_ADDRESS_COUNTER
-    EPD_2IN7B_V2_SendData(Ystart & 0xFF);
-    EPD_2IN7B_V2_SendData((Ystart >> 8) & 0xFF);
+	EPD_5IN83B_V2_SendCommand(0x12);			//DISPLAY REFRESH 	
+	DEV_Delay_ms(100);	        //!!!The delay here is necessary, 200uS at least!!!     
+	EPD_5IN83B_V2_WaitUntilIdle();        //waiting for the electronic paper IC to release the idle signal
 }
 
 /******************************************************************************
 function :	Initialize the e-Paper register
 parameter:
 ******************************************************************************/
-void EPD_2IN7B_V2_Init(void)
+UBYTE EPD_5IN83B_V2_Init(void)
 {
-	EPD_2IN7B_V2_Reset();
+    EPD_5IN83B_V2_Reset();
 
-	EPD_2IN7B_V2_ReadBusy();
-	EPD_2IN7B_V2_SendCommand(0x12);    
-	EPD_2IN7B_V2_ReadBusy();
-	
-	EPD_2IN7B_V2_SendCommand(0x00);    
-	EPD_2IN7B_V2_SendData(0x27);
-	EPD_2IN7B_V2_SendData(0x01);
-	EPD_2IN7B_V2_SendData(0x00);
-	
-	EPD_2IN7B_V2_SendCommand(0x11);    
-	EPD_2IN7B_V2_SendData(0x03);
+	EPD_5IN83B_V2_SendCommand(0x01);			//POWER SETTING
+	EPD_5IN83B_V2_SendData (0x07);
+	EPD_5IN83B_V2_SendData (0x07);    //VGH=20V,VGL=-20V
+	EPD_5IN83B_V2_SendData (0x3f);		//VDH=15V
+	EPD_5IN83B_V2_SendData (0x3f);		//VDL=-15V
 
-	EPD_2IN7B_V2_SetWindows(0, 0, EPD_2IN7B_V2_WIDTH-1, EPD_2IN7B_V2_HEIGHT-1);
-	EPD_2IN7B_V2_SetCursor(0, 0);
+	EPD_5IN83B_V2_SendCommand(0x04); //POWER ON
+	DEV_Delay_ms(100);  
+	EPD_5IN83B_V2_WaitUntilIdle();        //waiting for the electronic paper IC to release the idle signal
+
+	EPD_5IN83B_V2_SendCommand(0X00);			//PANNEL SETTING
+	EPD_5IN83B_V2_SendData(0x0F);   //KW-3f   KWR-2F	BWROTP 0f	BWOTP 1f
+
+	EPD_5IN83B_V2_SendCommand(0x61);        	//tres			
+	EPD_5IN83B_V2_SendData (0x02);		//source 648
+	EPD_5IN83B_V2_SendData (0x88);
+	EPD_5IN83B_V2_SendData (0x01);		//gate 480
+	EPD_5IN83B_V2_SendData (0xe0);
+
+	EPD_5IN83B_V2_SendCommand(0X15);		
+	EPD_5IN83B_V2_SendData(0x00);		
+
+	EPD_5IN83B_V2_SendCommand(0X50);			//VCOM AND DATA INTERVAL SETTING
+	EPD_5IN83B_V2_SendData(0x11);
+	EPD_5IN83B_V2_SendData(0x07);
+
+	EPD_5IN83B_V2_SendCommand(0X60);			//TCON SETTING
+	EPD_5IN83B_V2_SendData(0x22);
+		
+    return 0;
 }
 
 /******************************************************************************
 function :	Clear screen
 parameter:
 ******************************************************************************/
-void EPD_2IN7B_V2_Clear(void)
-{    
+void EPD_5IN83B_V2_Clear(void)
+{
     UWORD Width, Height;
-    Width = (EPD_2IN7B_V2_WIDTH % 8 == 0)? (EPD_2IN7B_V2_WIDTH / 8 ): (EPD_2IN7B_V2_WIDTH / 8 + 1);
-    Height = EPD_2IN7B_V2_HEIGHT;
+    Width =(EPD_5IN83B_V2_WIDTH % 8 == 0)?(EPD_5IN83B_V2_WIDTH / 8 ):(EPD_5IN83B_V2_WIDTH / 8 + 1);
+    Height = EPD_5IN83B_V2_HEIGHT;
+    UWORD i;
+    EPD_5IN83B_V2_SendCommand(0x10);
+    for(i=0; i<Width*Height; i++) {
+        EPD_5IN83B_V2_SendData(0xff);
 
-    EPD_2IN7B_V2_SendCommand(0x24);
-    for (UWORD j = 0; j < Height; j++) {
-        for (UWORD i = 0; i < Width; i++) {
-            EPD_2IN7B_V2_SendData(0Xff);
-        }
     }
+    EPD_5IN83B_V2_SendCommand(0x13);
+    for(i=0; i<Width*Height; i++)	{
+        EPD_5IN83B_V2_SendData(0x00);
 
-    EPD_2IN7B_V2_SendCommand(0x26);
-    for (UWORD j = 0; j < Height; j++) {
-        for (UWORD i = 0; i < Width; i++) {
-            EPD_2IN7B_V2_SendData(0X00);
-        }
     }
-
-	EPD_2IN7B_V2_TurnOnDisplay();
+    EPD_5IN83B_V2_TurnOnDisplay();
 }
 
 /******************************************************************************
 function :	Sends the image buffer in RAM to e-Paper and displays
 parameter:
 ******************************************************************************/
-void EPD_2IN7B_V2_Display(UBYTE *Imageblack, UBYTE *Imagered)
+void EPD_5IN83B_V2_Display(const UBYTE *blackimage, const UBYTE *ryimage)
 {
-    UWORD Width, Height;
-    Width = (EPD_2IN7B_V2_WIDTH % 8 == 0)? (EPD_2IN7B_V2_WIDTH / 8 ): (EPD_2IN7B_V2_WIDTH / 8 + 1);
-    Height = EPD_2IN7B_V2_HEIGHT;
-
-    EPD_2IN7B_V2_SendCommand(0x24);
-    for (UWORD j = 0; j < Height; j++) {
-        for (UWORD i = 0; i < Width; i++) {
-            EPD_2IN7B_V2_SendData(Imageblack[i + j * Width]);
-        }
-    }
-    
-    EPD_2IN7B_V2_SendCommand(0x26);
-    for (UWORD j = 0; j < Height; j++) {
-        for (UWORD i = 0; i < Width; i++) {
-            EPD_2IN7B_V2_SendData(~Imagered[i + j * Width]);
+    UDOUBLE Width, Height;
+    Width =(EPD_5IN83B_V2_WIDTH % 8 == 0)?(EPD_5IN83B_V2_WIDTH / 8 ):(EPD_5IN83B_V2_WIDTH / 8 + 1);
+    Height = EPD_5IN83B_V2_HEIGHT;
+	//send black data
+    EPD_5IN83B_V2_SendCommand(0x10);
+    for (UDOUBLE j = 0; j < Height; j++) {
+        for (UDOUBLE i = 0; i < Width; i++) {
+            EPD_5IN83B_V2_SendData(blackimage[i + j * Width]);
         }
     }
 
-	EPD_2IN7B_V2_TurnOnDisplay();
+    //send red data
+    EPD_5IN83B_V2_SendCommand(0x13);
+    for (UDOUBLE j = 0; j < Height; j++) {
+        for (UDOUBLE i = 0; i < Width; i++) {
+            EPD_5IN83B_V2_SendData(~ryimage[i + j * Width]);
+        }
+    }
+    EPD_5IN83B_V2_TurnOnDisplay();
 }
 
 /******************************************************************************
 function :	Enter sleep mode
 parameter:
 ******************************************************************************/
-void EPD_2IN7B_V2_Sleep(void)
+void EPD_5IN83B_V2_Sleep(void)
 {
-  	EPD_2IN7B_V2_SendCommand(0x10);  // Deep sleep
-  	EPD_2IN7B_V2_SendData(0x01);
+	EPD_5IN83B_V2_SendCommand(0X02);  	//power off
+	EPD_5IN83B_V2_WaitUntilIdle();        //waiting for the electronic paper IC to release the idle signal
+	EPD_5IN83B_V2_SendCommand(0X07);  	//deep sleep
+	EPD_5IN83B_V2_SendData(0xA5);
 }
