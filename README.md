@@ -4,8 +4,20 @@ A gem for interfacing with a waveshare E-ink panel
 
 ## Installation
 
+There are a bunch of things you need to do to make this work:
+
 Raspberry pi 4
 --------------
+
+Enable SPI
+
+```
+sudo raspi-config
+```
+
+Under Interfacing Options -> Enable SPI
+
+Then reboot the pi
 
 Install the bcm2835 libraries
 
