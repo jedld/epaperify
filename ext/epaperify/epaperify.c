@@ -105,7 +105,8 @@ void paint(ecanvas *canvas, int x, int y, char *message, CURSOR *cursor) {
 
     font = size_to_font(canvas->font_size);
     text_options.margin = 0;
-    text_options.line_padding = 0;    
+    text_options.line_padding = 0;
+    text_options.tabstops = 4;
     Paint_DrawString_EN(x, y, message, font, background_color, color, cursor, text_options);
 }
 

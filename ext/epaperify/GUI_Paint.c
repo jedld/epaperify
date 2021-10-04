@@ -581,25 +581,27 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
             Ypoint = Ystart;
         }
 
-        if (*pString == '\n') {
-            Ypoint += Font->Height + text_options.line_padding;
-            pString ++;
-            continue;
+        // Handle ANSI escape codes
+        switch(*pString) {
+            case '\n':
+              Ypoint += Font->Height + text_options.line_padding;
+              pString ++;
+              break;
+            case '\r':
+              Xpoint = 0;
+              pString ++;
+              break;
+            case '\t':
+              Xpoint += Font->Width * text_options.tabstops;
+              pString ++;
+              break;
+            default:
+              Paint_DrawChar(Xpoint, Ypoint, * pString, Font, Color_Background, Color_Foreground);
+              //The next character of the address
+              pString ++;
+              //The next word of the abscissa increases the font of the broadband
+              Xpoint += Font->Width;
         }
-
-        if (*pString == '\r') {
-            Xpoint = Xstart;
-            pString ++;
-            continue;
-        }
-
-        Paint_DrawChar(Xpoint, Ypoint, * pString, Font, Color_Background, Color_Foreground);
-
-        //The next character of the address
-        pString ++;
-
-        //The next word of the abscissa increases the font of the broadband
-        Xpoint += Font->Width;
     }
 
     cursor->Xcursor = Xpoint;

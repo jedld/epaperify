@@ -187,6 +187,7 @@ typedef struct {
 typedef struct {
     int line_padding;
     int margin;
+    int tabstops;
 } TEXT_OPTIONS;
 
 //init and Clear
