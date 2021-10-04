@@ -88,6 +88,7 @@ void paint(ecanvas *canvas, int x, int y, char *message, CURSOR *cursor) {
     sFONT *font;
     uint16_t color;
     uint16_t background_color;
+    TEXT_OPTIONS text_options;
     if (canvas->color < 4) {
        Paint_SelectImage(canvas->black_image);
        color = canvas->color;
@@ -103,7 +104,9 @@ void paint(ecanvas *canvas, int x, int y, char *message, CURSOR *cursor) {
     }
 
     font = size_to_font(canvas->font_size);
-    Paint_DrawString_EN(x, y, message, font, background_color, color, cursor);
+    text_options.margin = 0;
+    text_options.line_padding = 0;    
+    Paint_DrawString_EN(x, y, message, font, background_color, color, cursor, text_options);
 }
 
 sFONT *size_to_font(UWORD font_size) {

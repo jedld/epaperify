@@ -717,7 +717,7 @@ parameter:
 void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, int32_t Nummber,
                    sFONT* Font, UWORD Color_Foreground, UWORD Color_Background)
 {
-
+    TEXT_OPTIONS text_options;
     int16_t Num_Bit = 0, Str_Bit = 0;
     uint8_t Str_Array[ARRAY_LEN] = {0}, Num_Array[ARRAY_LEN] = {0};
     uint8_t *pStr = Str_Array;
@@ -743,8 +743,10 @@ void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, int32_t Nummber,
         Num_Bit --;
     }
 
+    text_options.line_padding = 0;
+    text_options.margin = 0;
     //show
-    Paint_DrawString_EN(Xpoint, Ypoint, (const char*)pStr, Font, Color_Background, Color_Foreground, &cursor);
+    Paint_DrawString_EN(Xpoint, Ypoint, (const char*)pStr, Font, Color_Background, Color_Foreground, &cursor, text_options);
 }
 
 /******************************************************************************
