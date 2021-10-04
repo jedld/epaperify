@@ -558,9 +558,9 @@ parameter:
     Color_Background : Select the background color
 ******************************************************************************/
 void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
-                         sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, CURSOR *cursor)
+                         sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, CURSOR *cursor, TEXT_OPTIONS text_options)
 {
-    UWORD Xpoint = Xstart;
+    UWORD Xpoint = Xstart + text_options.margin;
     UWORD Ypoint = Ystart;
 
     if (Xstart > Paint.Width || Ystart > Paint.Height) {
@@ -570,19 +570,19 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
 
     while (* pString != '\0') {
         //if X direction filled , reposition to(Xstart,Ypoint),Ypoint is Y direction plus the Height of the character
-        if ((Xpoint + Font->Width ) > Paint.Width ) {
+        if ((Xpoint + Font->Width ) > (Paint.Width - text_options.margin) ) {
             Xpoint = Xstart;
-            Ypoint += Font->Height;
+            Ypoint += Font->Height + text_options.line_padding;
         }
 
         // If the Y direction is full, reposition to(Xstart, Ystart)
-        if ((Ypoint  + Font->Height ) > Paint.Height ) {
+        if ((Ypoint  + Font->Height + text_options.line_padding) > Paint.Height ) {
             Xpoint = Xstart;
             Ypoint = Ystart;
         }
 
         if (*pString == '\n') {
-            Ypoint += Font->Height;
+            Ypoint += Font->Height + text_options.line_padding;
             pString ++;
             continue;
         }

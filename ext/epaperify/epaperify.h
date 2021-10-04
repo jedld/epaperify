@@ -12,10 +12,18 @@
 #ifndef _EPAPERIFY_h_
 #define _EPAPERIFY_h_
 
-
 #define EPD_2IN7B_V2 0
 #define EPD_5IN83B_V2 1
 #define EPD_5IN83_V2 2
+
+typedef struct epaper_image_buffer {
+    UWORD width;
+    UWORD height;
+    UWORD rotate;
+    UWORD color;
+    UWORD Bcolor, Wcolor;
+    UBYTE *image;
+} EPAPER_IMAGE_BUFFER;
 
 typedef struct epaper_model_interface {
    void (*init_func)();
@@ -34,9 +42,11 @@ typedef struct epaper_canvas {
     int font_size;
     UWORD Xcursor;
     UWORD Ycursor;
+    int bpp;
+    int rotation;
     epaper_interface interface;
 } ecanvas;
 
-
+sFONT *size_to_font(UWORD font_size);
 
 #endif

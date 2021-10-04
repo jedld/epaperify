@@ -1,10 +1,23 @@
 # Epaperify
 
-Welcome to your new gem! In this directory, you'll find the files you need to be able to package up your Ruby library into a gem. Put your Ruby code in the file `lib/epaperify`. To experiment with that code, run `bin/console` for an interactive prompt.
-
-TODO: Delete this and the text above, and describe your gem
+A gem for interfacing with a waveshare E-ink panel
 
 ## Installation
+
+Raspberry pi 4
+--------------
+
+Install the bcm2835 libraries
+
+```
+wget http://www.airspayce.com/mikem/bcm2835/bcm2835-1.60.tar.gz
+tar zxvf bcm2835-1.60.tar.gz 
+cd bcm2835-1.60/
+sudo ./configure
+sudo make
+sudo make check
+sudo make install
+```
 
 Add this line to your application's Gemfile:
 
@@ -22,7 +35,31 @@ Or install it yourself as:
 
 ## Usage
 
-TODO: Write usage instructions here
+Create a canvas passing the E-ink model as well as a rotation
+
+```ruby
+require "epaperify"
+
+canvas = Epaperify::PaperCanvas.new(Epaperify::DISPLAY_EPD_5IN83_V2, 90)
+```
+
+There are various things you can do on the canvas.
+
+```ruby
+canvas.font_size = 24
+bitmap = Epaperify::ImageBuffer.new("sample/sample.bmp")
+canvas.draw_bitmap(bitmap, 0, 0)
+puts canvas.measure "Hello World!"
+canvas.print "Hello World!"
+```
+
+Show them on the screen
+
+```ruby
+canvas.show
+```
+
+Note: You need superuser to access /dev/gpiomem so ruby scripts have to be run under sudo
 
 ## Development
 

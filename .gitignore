@@ -8,6 +8,7 @@
 /tmp/
 /ext/epaperify/*.o
 /ext/epaperify/*.so
+lib/epaperify/epaperify.so
 
 # rspec failure tracking
 .rspec_status
