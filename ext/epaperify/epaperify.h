@@ -45,6 +45,7 @@ typedef struct epaper_canvas {
     int bpp;
     int rotation;
     epaper_interface interface;
+    TEXT_OPTIONS text_options;
 } ecanvas;
 
 sFONT *size_to_font(UWORD font_size);

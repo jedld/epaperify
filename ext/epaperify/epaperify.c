@@ -88,7 +88,7 @@ void paint(ecanvas *canvas, int x, int y, char *message, CURSOR *cursor) {
     sFONT *font;
     uint16_t color;
     uint16_t background_color;
-    TEXT_OPTIONS text_options;
+
     if (canvas->color < 4) {
        Paint_SelectImage(canvas->black_image);
        color = canvas->color;
@@ -104,10 +104,7 @@ void paint(ecanvas *canvas, int x, int y, char *message, CURSOR *cursor) {
     }
 
     font = size_to_font(canvas->font_size);
-    text_options.margin = 0;
-    text_options.line_padding = 0;
-    text_options.tabstops = 4;
-    Paint_DrawString_EN(x, y, message, font, background_color, color, cursor, text_options);
+    Paint_DrawString_EN(x, y, message, font, background_color, color, cursor, canvas->text_options);
 }
 
 sFONT *size_to_font(UWORD font_size) {
@@ -350,10 +347,41 @@ VALUE allocate(VALUE klass) {
     canvas->Ycursor = 0;
     canvas->black_image = NULL;
     canvas->red_image = NULL;
-    
-    printf("canvas allocated");
-
+    canvas->text_options.tabstops = 4;
+        
     return Data_Wrap_Struct(klass, 0, free_canvas, canvas);
+}
+
+VALUE text_options(VALUE self, VALUE settings) {
+    ecanvas *canvas;
+    Data_Get_Struct(self, ecanvas, canvas);
+    
+    VALUE keys_v = rb_funcall(settings, rb_intern("keys"), 0);
+    int length = RARRAY_LEN(keys_v);
+    for (int i = 0; i < length; i++) {
+        VALUE k = krb_ary_entry(keys_v, i);
+        char *c_key = StringValueCStr(k);
+        int val = NUM2INT(rb_hash_aref(settings, k));
+        if (strcasecmp(c_key, "margin_left") == 0) {
+            canvas->text_options.margin_left = val;
+        } else 
+        if (strcasecmp(c_key, "margin_right") == 0) {
+            canvas->text_options.margin_right = val;
+        } else
+        if (strcasecmp(c_key, "margin_bottom") == 0) {
+            canvas->text_options.margin_bottom = val;
+        } else
+        if (strcasecmp(c_key, "margin_top") == 0) {
+            canvas->text_options.margin_top = val;
+        } else
+        if (strcasecmp(c_key, "line_padding") == 0) {
+            canvas->text_options.line_padding = val;
+        } else
+        if (strcasecmp(c_key, "tabstops") == 0) {
+            canvas->text_options.tabstops = val;
+        }
+    }
+    return Qnil;
 }
 
 void free_image_buffer(EPAPER_IMAGE_BUFFER *buffer) {
@@ -566,6 +594,7 @@ void Init_epaperify() {
     rb_define_method(canvasKlass, "draw_bitmap", draw_bitmap, 3);
     rb_define_method(canvasKlass, "read_bmp", read_bitmap_direct, 3);
     rb_define_method(canvasKlass, "measure", string_metrics, 1);
+    rb_define_method(canvasKlass, "text_options", text_options, 1);
 
     //Image Buffer
     imageBuffer = rb_define_class_under(mod, "ImageBuffer", rb_cObject);

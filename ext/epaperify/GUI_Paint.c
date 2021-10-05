@@ -560,8 +560,8 @@ parameter:
 void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
                          sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, CURSOR *cursor, TEXT_OPTIONS text_options)
 {
-    UWORD Xpoint = Xstart + text_options.margin;
-    UWORD Ypoint = Ystart;
+    UWORD Xpoint = Xstart + text_options.margin_left;
+    UWORD Ypoint = Ystart + text_options.margin_top;
 
     if (Xstart > Paint.Width || Ystart > Paint.Height) {
         Debug("Paint_DrawString_EN Input exceeds the normal display range\r\n");
@@ -570,13 +570,13 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
 
     while (* pString != '\0') {
         //if X direction filled , reposition to(Xstart,Ypoint),Ypoint is Y direction plus the Height of the character
-        if ((Xpoint + Font->Width ) > (Paint.Width - text_options.margin) ) {
+        if ((Xpoint + Font->Width ) > (Paint.Width - text_options.margin_right) ) {
             Xpoint = Xstart;
             Ypoint += Font->Height + text_options.line_padding;
         }
 
         // If the Y direction is full, reposition to(Xstart, Ystart)
-        if ((Ypoint  + Font->Height + text_options.line_padding) > Paint.Height ) {
+        if ((Ypoint  + Font->Height + text_options.line_padding) > (Paint.Height - text_options.margin_bottom)) {
             Xpoint = Xstart;
             Ypoint = Ystart;
         }
@@ -584,11 +584,9 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
         // Handle ANSI escape codes
         switch(*pString) {
             case '\n':
-              Ypoint += Font->Height + text_options.line_padding;
-              pString ++;
-              break;
             case '\r':
               Xpoint = 0;
+              Ypoint += Font->Height + text_options.line_padding;
               pString ++;
               break;
             case '\t':
@@ -717,9 +715,8 @@ parameter:
 ******************************************************************************/
 #define  ARRAY_LEN 255
 void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, int32_t Nummber,
-                   sFONT* Font, UWORD Color_Foreground, UWORD Color_Background)
+                   sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, TEXT_OPTIONS text_options)
 {
-    TEXT_OPTIONS text_options;
     int16_t Num_Bit = 0, Str_Bit = 0;
     uint8_t Str_Array[ARRAY_LEN] = {0}, Num_Array[ARRAY_LEN] = {0};
     uint8_t *pStr = Str_Array;
@@ -745,8 +742,6 @@ void Paint_DrawNum(UWORD Xpoint, UWORD Ypoint, int32_t Nummber,
         Num_Bit --;
     }
 
-    text_options.line_padding = 0;
-    text_options.margin = 0;
     //show
     Paint_DrawString_EN(Xpoint, Ypoint, (const char*)pStr, Font, Color_Background, Color_Foreground, &cursor, text_options);
 }
