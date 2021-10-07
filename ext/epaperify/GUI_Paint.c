@@ -547,6 +547,12 @@ void Paint_DrawChar(UWORD Xpoint, UWORD Ypoint, const char Acsii_Char,
     }// Write all
 }
 
+typedef struct word_boundary {
+    int index;
+    int characters;
+    struct word_boundary *next;
+} WORD_BOUNDARY;
+
 /******************************************************************************
 function:	Display the string
 parameter:
@@ -557,11 +563,60 @@ parameter:
     Color_Foreground : Select the foreground color
     Color_Background : Select the background color
 ******************************************************************************/
+int is_word_boundary_char(char c) {
+    switch(c) {
+        case ' ': return 1;
+        case '\r': return 1;
+        case '\n': return 1;
+        case '\t': return 1;
+    };
+    return 0;
+};
+
 void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
                          sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, CURSOR *cursor, TEXT_OPTIONS text_options)
 {
     UWORD Xpoint = Xstart + text_options.margin_left;
     UWORD Ypoint = Ystart + text_options.margin_top;
+    const char * pWordScanner = pString;
+    WORD_BOUNDARY *wordhead = NULL, *curword = NULL;
+
+    int word_boundary = 0;
+    int index = 0;
+
+    if (text_options.split_on_word_boundary) {
+        while (*pWordScanner != '\0') {
+            if (!is_word_boundary_char(*pWordScanner)) {
+                if (!word_boundary) {
+                    WORD_BOUNDARY *word = (WORD_BOUNDARY*)malloc(sizeof(WORD_BOUNDARY));
+                    word->index = index;
+                    word->characters = 1;
+                    word->next = NULL;
+
+                    if (curword != NULL) {
+                        curword->next = word;
+                        curword = word;
+                    } else {
+                        curword = word;
+                        wordhead = word;
+                    }
+
+                    word_boundary = 1;
+                } else {
+                    if (curword == NULL) { printf("assert error wordhead cannot be null"); };
+                    curword->characters++;
+                }
+            } else {
+              word_boundary = 0;
+            }
+
+            index++;
+            pWordScanner++;
+        }
+        curword = wordhead;
+        index = 0;
+    }
+
 
     if (Xstart > Paint.Width || Ystart > Paint.Height) {
         Debug("Paint_DrawString_EN Input exceeds the normal display range\r\n");
@@ -570,14 +625,22 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
 
     while (* pString != '\0') {
         //if X direction filled , reposition to(Xstart,Ypoint),Ypoint is Y direction plus the Height of the character
+        if (curword != NULL && (index == curword->index)) {
+            if ((Xpoint + Font->Width * curword->characters ) > (Paint.Width - text_options.margin_right) ) {
+                Xpoint = Xstart + text_options.margin_left;
+                Ypoint += Font->Height + text_options.line_padding;
+            }
+            curword = curword->next;
+        }
+
         if ((Xpoint + Font->Width ) > (Paint.Width - text_options.margin_right) ) {
-            Xpoint = Xstart;
+            Xpoint = Xstart + text_options.margin_left;
             Ypoint += Font->Height + text_options.line_padding;
         }
 
         // If the Y direction is full, reposition to(Xstart, Ystart)
         if ((Ypoint  + Font->Height + text_options.line_padding) > (Paint.Height - text_options.margin_bottom)) {
-            Xpoint = Xstart;
+            Xpoint = Xstart + text_options.margin_left;
             Ypoint = Ystart;
         }
 
@@ -588,15 +651,18 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
               Xpoint = text_options.margin_right;
               Ypoint += Font->Height + text_options.line_padding;
               pString ++;
+              index ++;
               break;
             case '\t':
               Xpoint += Font->Width * text_options.tabstops;
               pString ++;
+              index ++;
               break;
             default:
               Paint_DrawChar(Xpoint, Ypoint, * pString, Font, Color_Background, Color_Foreground);
               //The next character of the address
               pString ++;
+              index ++;
               //The next word of the abscissa increases the font of the broadband
               Xpoint += Font->Width;
         }
@@ -604,6 +670,14 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
 
     cursor->Xcursor = Xpoint;
     cursor->Ycursor = Ypoint;
+
+    if (wordhead != NULL) {
+        while(wordhead != NULL) {
+            WORD_BOUNDARY *temp = wordhead;
+            wordhead = wordhead->next;
+            free(temp);
+        }
+    }
 }
 
 

@@ -191,6 +191,7 @@ typedef struct {
     int margin_bottom;
     int margin_top;
     int tabstops;
+    int split_on_word_boundary;
 } TEXT_OPTIONS;
 
 //init and Clear

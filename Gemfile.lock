@@ -13,6 +13,8 @@ GEM
       ast (~> 2.4.1)
     rainbow (3.0.0)
     rake (13.0.6)
+    rake-compiler (1.1.1)
+      rake
     regexp_parser (2.1.1)
     rexml (3.2.5)
     rspec (3.10.0)
@@ -28,7 +30,7 @@ GEM
       diff-lcs (>= 1.2.0, < 2.0)
       rspec-support (~> 3.10.0)
     rspec-support (3.10.2)
-    rubocop (1.22.0)
+    rubocop (1.22.1)
       parallel (~> 1.10)
       parser (>= 3.0.0.0)
       rainbow (>= 2.2.2, < 4.0)
@@ -43,13 +45,14 @@ GEM
     unicode-display_width (2.1.0)
 
 PLATFORMS
-  aarch64-linux
+  ruby
 
 DEPENDENCIES
   epaperify!
   rake (~> 13.0)
+  rake-compiler
   rspec (~> 3.0)
   rubocop (~> 1.7)
 
 BUNDLED WITH
-   2.2.28
+   1.17.3

@@ -348,6 +348,7 @@ VALUE allocate(VALUE klass) {
     canvas->black_image = NULL;
     canvas->red_image = NULL;
     canvas->text_options.tabstops = 4;
+    canvas->text_options.split_on_word_boundary = true;
         
     return Data_Wrap_Struct(klass, 0, free_canvas, canvas);
 }
