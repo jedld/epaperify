@@ -678,7 +678,6 @@ void draw_string_handler(UWORD Xstart, UWORD Ystart, const char * pString,
             case '\r':
               Xpoint = text_options.margin_right;
               Ypoint += Font->Height + text_options.line_padding;
-              newline = 1;
               break;
             case '\t':
               Xpoint += Font->Width * text_options.tabstops;
