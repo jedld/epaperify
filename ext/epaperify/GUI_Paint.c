@@ -667,6 +667,9 @@ void draw_string_handler(UWORD Xstart, UWORD Ystart, const char * pString,
                 pString++;
                 index++;
             }
+            if (curword != NULL && (index == curword->index)) {
+                curword = curword->next;
+            }
         }
 
         // Handle ANSI escape codes
