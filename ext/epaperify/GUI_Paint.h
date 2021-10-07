@@ -16,7 +16,7 @@
 * 1. Add gray level
 *   PAINT Add Scale
 * 2. Add void Paint_SetScale(UBYTE scale);
-* 
+*
 * V3.0(2019-04-18):
 * 1.Change: 
 *    Paint_DrawPoint(..., DOT_STYLE DOT_STYLE)
@@ -194,6 +194,12 @@ typedef struct {
     int split_on_word_boundary;
 } TEXT_OPTIONS;
 
+typedef struct word_boundary {
+    int index;
+    int characters;
+    struct word_boundary *next;
+} WORD_BOUNDARY;
+
 //init and Clear
 void Paint_NewImage(UBYTE *image, UWORD Width, UWORD Height, UWORD Rotate, UWORD Color);
 void Paint_SelectImage(UBYTE *image);
@@ -220,6 +226,10 @@ void Paint_DrawTime(UWORD Xstart, UWORD Ystart, PAINT_TIME *pTime, sFONT* Font, 
 
 //pic
 void Paint_DrawBitMap(const unsigned char* image_buffer);
+
+//String
+WORD_BOUNDARY *generate_word_boundaries(const char *pString);
+void free_word_boundaries(WORD_BOUNDARY *word_head);
 
 
 #endif

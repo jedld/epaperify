@@ -100,16 +100,16 @@ void Paint_NewImage(UBYTE *image, UWORD Width, UWORD Height, UWORD Rotate, UWORD
 
     Paint.WidthMemory = Width;
     Paint.HeightMemory = Height;
-    Paint.Color = Color;    
+    Paint.Color = Color;
     Paint.Scale = 2;
     Paint.WidthByte = (Width % 8 == 0)? (Width / 8 ): (Width / 8 + 1);
-    Paint.HeightByte = Height;    
+    Paint.HeightByte = Height;
 //    printf("WidthByte = %d, HeightByte = %d\r\n", Paint.WidthByte, Paint.HeightByte);
 //    printf(" EPD_WIDTH / 8 = %d\r\n",  122 / 8);
-   
+
     Paint.Rotate = Rotate;
     Paint.Mirror = MIRROR_NONE;
-    
+
     if(Rotate == ROTATE_0 || Rotate == ROTATE_180) {
         Paint.Width = Width;
         Paint.Height = Height;
@@ -151,14 +151,14 @@ parameter:
 ******************************************************************************/
 void Paint_SetMirroring(UBYTE mirror)
 {
-    if(mirror == MIRROR_NONE || mirror == MIRROR_HORIZONTAL || 
+    if(mirror == MIRROR_NONE || mirror == MIRROR_HORIZONTAL ||
         mirror == MIRROR_VERTICAL || mirror == MIRROR_ORIGIN) {
         Debug("mirror image x:%s, y:%s\r\n",(mirror & 0x01)? "mirror":"none", ((mirror >> 1) & 0x01)? "mirror":"none");
         Paint.Mirror = mirror;
     } else {
         Debug("mirror should be MIRROR_NONE, MIRROR_HORIZONTAL, \
         MIRROR_VERTICAL or MIRROR_ORIGIN\r\n");
-    }    
+    }
 }
 
 void Paint_SetScale(UBYTE scale)
@@ -189,12 +189,12 @@ void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
     if(Xpoint > Paint.Width || Ypoint > Paint.Height){
         Debug("Exceeding display boundaries\r\n");
         return;
-    }      
+    }
     UWORD X, Y;
     switch(Paint.Rotate) {
     case 0:
         X = Xpoint;
-        Y = Ypoint;  
+        Y = Ypoint;
         break;
     case 90:
         X = Paint.WidthMemory - Ypoint - 1;
@@ -211,7 +211,7 @@ void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
     default:
         return;
     }
-    
+
     switch(Paint.Mirror) {
     case MIRROR_NONE:
         break;
@@ -233,7 +233,7 @@ void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
         Debug("Exceeding display boundaries\r\n");
         return;
     }
-    
+
     if(Paint.Scale == 2){
         UDOUBLE Addr = X / 8 + Y * Paint.WidthByte;
         UBYTE Rdata = Paint.Image[Addr];
@@ -245,7 +245,7 @@ void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
         UDOUBLE Addr = X / 4 + Y * Paint.WidthByte;
         Color = Color % 4;//Guaranteed color scale is 4  --- 0~3
         UBYTE Rdata = Paint.Image[Addr];
-        
+
         Rdata = Rdata & (~(0xC0 >> ((X % 4)*2)));//Clear first, then set value
         Paint.Image[Addr] = Rdata | ((Color << 6) >> ((X % 4)*2));
     }else if(Paint.Scale == 7){
@@ -263,21 +263,21 @@ parameter:
     Color : Painted colors
 ******************************************************************************/
 void Paint_Clear(UWORD Color)
-{	
+{
 	if(Paint.Scale == 2 || Paint.Scale == 4){
 		for (UWORD Y = 0; Y < Paint.HeightByte; Y++) {
 			for (UWORD X = 0; X < Paint.WidthByte; X++ ) {//8 pixel =  1 byte
 				UDOUBLE Addr = X + Y*Paint.WidthByte;
 				Paint.Image[Addr] = Color;
 			}
-		}		
+		}
 	}else if(Paint.Scale == 7){
 		for (UWORD Y = 0; Y < Paint.HeightByte; Y++) {
 			for (UWORD X = 0; X < Paint.WidthByte; X++ ) {
 				UDOUBLE Addr = X + Y*Paint.WidthByte;
 				Paint.Image[Addr] = (Color<<4)|Color;
 			}
-		}		
+		}
 	}
 
 }
@@ -547,11 +547,7 @@ void Paint_DrawChar(UWORD Xpoint, UWORD Ypoint, const char Acsii_Char,
     }// Write all
 }
 
-typedef struct word_boundary {
-    int index;
-    int characters;
-    struct word_boundary *next;
-} WORD_BOUNDARY;
+
 
 /******************************************************************************
 function:	Display the string
@@ -573,50 +569,67 @@ int is_word_boundary_char(char c) {
     return 0;
 };
 
+WORD_BOUNDARY *generate_word_boundaries(const char *pString) {
+    const char * pWordScanner = pString;
+    WORD_BOUNDARY *wordhead = NULL, *curword = NULL;
+    int word_boundary = 0;
+    int index = 0;
+
+    while (*pWordScanner != '\0') {
+        if (!is_word_boundary_char(*pWordScanner)) {
+            if (!word_boundary) {
+                WORD_BOUNDARY *word = (WORD_BOUNDARY*)malloc(sizeof(WORD_BOUNDARY));
+                word->index = index;
+                word->characters = 1;
+                word->next = NULL;
+
+                if (curword != NULL) {
+                    curword->next = word;
+                    curword = word;
+                } else {
+                    curword = word;
+                    wordhead = word;
+                }
+
+                word_boundary = 1;
+            } else {
+                if (curword == NULL) { printf("assert error wordhead cannot be null"); };
+                curword->characters++;
+            }
+        } else {
+            word_boundary = 0;
+        }
+
+        index++;
+        pWordScanner++;
+    }
+
+    return wordhead;
+}
+
+void free_word_boundaries(WORD_BOUNDARY *word_head) {
+    if (word_head != NULL) {
+        while(word_head != NULL) {
+            WORD_BOUNDARY *temp = word_head;
+            word_head = word_head->next;
+            free(temp);
+        }
+    }
+}
+
 void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
                          sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, CURSOR *cursor, TEXT_OPTIONS text_options)
 {
     UWORD Xpoint = Xstart + text_options.margin_left;
     UWORD Ypoint = Ystart + text_options.margin_top;
-    const char * pWordScanner = pString;
-    WORD_BOUNDARY *wordhead = NULL, *curword = NULL;
 
-    int word_boundary = 0;
+    WORD_BOUNDARY *curword = NULL, *word_head = NULL;
     int index = 0;
 
     if (text_options.split_on_word_boundary) {
-        while (*pWordScanner != '\0') {
-            if (!is_word_boundary_char(*pWordScanner)) {
-                if (!word_boundary) {
-                    WORD_BOUNDARY *word = (WORD_BOUNDARY*)malloc(sizeof(WORD_BOUNDARY));
-                    word->index = index;
-                    word->characters = 1;
-                    word->next = NULL;
-
-                    if (curword != NULL) {
-                        curword->next = word;
-                        curword = word;
-                    } else {
-                        curword = word;
-                        wordhead = word;
-                    }
-
-                    word_boundary = 1;
-                } else {
-                    if (curword == NULL) { printf("assert error wordhead cannot be null"); };
-                    curword->characters++;
-                }
-            } else {
-              word_boundary = 0;
-            }
-
-            index++;
-            pWordScanner++;
-        }
-        curword = wordhead;
-        index = 0;
+        curword = generate_word_boundaries(pString);
+        word_head = curword;
     }
-
 
     if (Xstart > Paint.Width || Ystart > Paint.Height) {
         Debug("Paint_DrawString_EN Input exceeds the normal display range\r\n");
@@ -671,13 +684,7 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
     cursor->Xcursor = Xpoint;
     cursor->Ycursor = Ypoint;
 
-    if (wordhead != NULL) {
-        while(wordhead != NULL) {
-            WORD_BOUNDARY *temp = wordhead;
-            wordhead = wordhead->next;
-            free(temp);
-        }
-    }
+    free_word_boundaries(word_head);
 }
 
 

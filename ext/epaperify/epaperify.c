@@ -290,49 +290,72 @@ VALUE screen_sleep(VALUE self) {
 }
 
 VALUE string_metrics(VALUE self, VALUE astring) {
-    UWORD Xpoint = 0;
-    UWORD Ypoint = 0;
     ecanvas *canvas;
+    WORD_BOUNDARY *curword = NULL, *word_head = NULL;
+    int index = 0;
+
     Data_Get_Struct(self, ecanvas, canvas);
     char *pString = StringValueCStr(astring);
     sFONT *font = size_to_font(canvas->font_size);
+    TEXT_OPTIONS text_options = canvas->text_options;
+    UWORD Xpoint = text_options.margin_left;
+    UWORD Ypoint = text_options.margin_top;
     
     if (font == NULL) return Qnil;
+
+    if (text_options.split_on_word_boundary) {
+        curword = generate_word_boundaries(pString);
+        word_head = curword;
+    }
+
     while (* pString != '\0') {
         //if X direction filled , reposition to(Xstart,Ypoint),Ypoint is Y direction plus the Height of the character
-        if ((Xpoint + font->Width ) > Paint.Width ) {
-            Xpoint = 0;
-            Ypoint += font->Height;
+        if (curword != NULL && (index == curword->index)) {
+            if ((Xpoint + font->Width * curword->characters ) > (Paint.Width - text_options.margin_right) ) {
+                Xpoint = text_options.margin_left;
+                Ypoint += font->Height + text_options.line_padding;
+            }
+            curword = curword->next;
+        }
+
+        if ((Xpoint + font->Width ) > (Paint.Width - text_options.margin_right) ) {
+            Xpoint =text_options.margin_left;
+            Ypoint += font->Height + text_options.line_padding;
         }
 
         // If the Y direction is full, reposition to(Xstart, Ystart)
-        if ((Ypoint  + font->Height ) > Paint.Height ) {
-            Xpoint = 0;
-            Ypoint = 0;
+        if ((Ypoint  + font->Height + text_options.line_padding) > (Paint.Height - text_options.margin_bottom)) {
+            Xpoint = text_options.margin_left;
+            Ypoint = text_options.margin_top;
         }
 
-        if (*pString == '\n') {
-            Ypoint += font->Height;
-            pString ++;
-            continue;
+        // Handle ANSI escape codes
+        switch(*pString) {
+            case '\n':
+            case '\r':
+              Xpoint = text_options.margin_right;
+              Ypoint += font->Height + text_options.line_padding;
+              pString ++;
+              index ++;
+              break;
+            case '\t':
+              Xpoint += font->Width * text_options.tabstops;
+              pString ++;
+              index ++;
+              break;
+            default:
+              //The next character of the address
+              pString ++;
+              index ++;
+              //The next word of the abscissa increases the font of the broadband
+              Xpoint += font->Width;
         }
-
-        if (*pString == '\r') {
-            Xpoint = 0;
-            pString ++;
-            continue;
-        }
-
-        //The next character of the address
-        pString ++;
-
-        //The next word of the abscissa increases the font of the broadband
-        Xpoint += font->Width;
     }
 
+    free_word_boundaries(word_head);
     VALUE hash = rb_hash_new();
-    rb_hash_aset(hash, rb_str_new2("width"), INT2FIX(Xpoint));
-    rb_hash_aset(hash, rb_str_new2("height"), INT2FIX(Ypoint + font->Height));
+    rb_hash_aset(hash, rb_str_new2("width"), INT2FIX(Xpoint - text_options.margin_left));
+    rb_hash_aset(hash, rb_str_new2("height"), INT2FIX(Ypoint + font->Height - text_options.margin_top ));
     return hash;
 }
 
