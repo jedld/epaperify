@@ -662,6 +662,13 @@ void draw_string_handler(UWORD Xstart, UWORD Ystart, const char * pString,
             Ypoint = Ystart;
         }
 
+         if (newline && text_options.strip_leading_spaces) {
+            while(*pString!='\0' && *pString==' ') {
+                pString++;
+                index++;
+            }
+        }
+
         // Handle ANSI escape codes
         switch(*pString) {
             case '\n':
@@ -675,22 +682,17 @@ void draw_string_handler(UWORD Xstart, UWORD Ystart, const char * pString,
               newline = 0;
               break;
             case ' ':
-              if (newline && text_options.strip_leading_spaces) {
-                while(*pString!='\0' && *pString==' ') {
-                    pString++;
-                    index++;
-                }
-              }
+
             default:
                 if (paint_callback!=NULL) {
                     paint_callback(Xpoint, Ypoint, *pString, Font, Color_Background, Color_Foreground);
                 }
               //The next character of the address
               //The next word of the abscissa increases the font of the broadband
-              newline = 0;
+
               Xpoint += Font->Width;
         }
-
+        newline = 0;
         pString ++;
         index ++;
     }
