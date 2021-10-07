@@ -617,9 +617,10 @@ void free_word_boundaries(WORD_BOUNDARY *word_head) {
     }
 }
 
-void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
-                         sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, CURSOR *cursor, TEXT_OPTIONS text_options)
-{
+void draw_string_handler(UWORD Xstart, UWORD Ystart, const char * pString,
+                         sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, CURSOR *cursor, TEXT_OPTIONS text_options,
+                         void (*paint_callback)(UWORD, UWORD, const char,
+                    sFONT*, UWORD, UWORD)) {
     UWORD Xpoint = Xstart + text_options.margin_left;
     UWORD Ypoint = Ystart + text_options.margin_top;
 
@@ -671,30 +672,41 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
               break;
             case '\t':
               Xpoint += Font->Width * text_options.tabstops;
+              newline = 0;
               break;
+            case ' ':
+              if (newline && text_options.strip_leading_spaces) {
+                while(*pString!='\0' && *pString==' ') {
+                    pString++;
+                    index++;
+                }
+                break;
+              }
+
             default:
-              Paint_DrawChar(Xpoint, Ypoint, *pString, Font, Color_Background, Color_Foreground);
+                if (paint_callback!=NULL) {
+                    paint_callback(Xpoint, Ypoint, *pString, Font, Color_Background, Color_Foreground);
+                }
               //The next character of the address
               //The next word of the abscissa increases the font of the broadband
+              newline = 0;
               Xpoint += Font->Width;
         }
 
         pString ++;
         index ++;
-        if (newline && text_options.strip_leading_spaces && *pString!='\0') {
-            while(*pString==' ') {
-                pString++;
-                index++;
-            }
-        }
-
-        newline = 0;
     }
 
     cursor->Xcursor = Xpoint;
     cursor->Ycursor = Ypoint;
 
     free_word_boundaries(word_head);
+}
+
+void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
+                         sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, CURSOR *cursor, TEXT_OPTIONS text_options)
+{
+    draw_string_handler(Xstart, Ystart, pString, Font, Color_Foreground, Color_Background, cursor, text_options, Paint_DrawChar);
 }
 
 

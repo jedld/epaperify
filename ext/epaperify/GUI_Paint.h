@@ -231,6 +231,10 @@ void Paint_DrawBitMap(const unsigned char* image_buffer);
 //String
 WORD_BOUNDARY *generate_word_boundaries(const char *pString);
 void free_word_boundaries(WORD_BOUNDARY *word_head);
+void draw_string_handler(UWORD Xstart, UWORD Ystart, const char * pString,
+                         sFONT* Font, UWORD Color_Foreground, UWORD Color_Background, CURSOR *cursor, TEXT_OPTIONS text_options,
+                         void (*paint_callback)(UWORD, UWORD, const char,
+                    sFONT*, UWORD, UWORD));
 
 
 #endif
