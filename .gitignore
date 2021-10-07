@@ -9,6 +9,7 @@
 /ext/epaperify/*.o
 /ext/epaperify/*.so
 lib/epaperify/epaperify.so
+*.gem
 
 # rspec failure tracking
 .rspec_status
