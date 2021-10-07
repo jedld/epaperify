@@ -53,7 +53,7 @@
     DEV_Delay_ms(2000);//important, at least 2s
     // close 5V
     printf("close 5V, Module enters 0 power consumption ...\r\n");
-    DEV_Module_Exit(); 
+    DEV_Module_Exit();
 } */
 
 VALUE clear() {
@@ -285,7 +285,7 @@ VALUE screen_sleep(VALUE self) {
     DEV_Delay_ms(2000);//important, at least 2s
     // close 5V
     printf("close 5V, Module enters 0 power consumption ...\r\n");
-    DEV_Module_Exit(); 
+    DEV_Module_Exit();
     return Qnil;
 }
 
@@ -298,64 +298,14 @@ VALUE string_metrics(VALUE self, VALUE astring) {
     char *pString = StringValueCStr(astring);
     sFONT *font = size_to_font(canvas->font_size);
     TEXT_OPTIONS text_options = canvas->text_options;
-    UWORD Xpoint = text_options.margin_left;
-    UWORD Ypoint = text_options.margin_top;
-    
-    if (font == NULL) return Qnil;
+    CURSOR cursor;
 
-    if (text_options.split_on_word_boundary) {
-        curword = generate_word_boundaries(pString);
-        word_head = curword;
-    }
-
-    while (* pString != '\0') {
-        //if X direction filled , reposition to(Xstart,Ypoint),Ypoint is Y direction plus the Height of the character
-        if (curword != NULL && (index == curword->index)) {
-            if ((Xpoint + font->Width * curword->characters ) > (Paint.Width - text_options.margin_right) ) {
-                Xpoint = text_options.margin_left;
-                Ypoint += font->Height + text_options.line_padding;
-            }
-            curword = curword->next;
-        }
-
-        if ((Xpoint + font->Width ) > (Paint.Width - text_options.margin_right) ) {
-            Xpoint =text_options.margin_left;
-            Ypoint += font->Height + text_options.line_padding;
-        }
-
-        // If the Y direction is full, reposition to(Xstart, Ystart)
-        if ((Ypoint  + font->Height + text_options.line_padding) > (Paint.Height - text_options.margin_bottom)) {
-            Xpoint = text_options.margin_left;
-            Ypoint = text_options.margin_top;
-        }
-
-        // Handle ANSI escape codes
-        switch(*pString) {
-            case '\n':
-            case '\r':
-              Xpoint = text_options.margin_right;
-              Ypoint += font->Height + text_options.line_padding;
-              pString ++;
-              index ++;
-              break;
-            case '\t':
-              Xpoint += font->Width * text_options.tabstops;
-              pString ++;
-              index ++;
-              break;
-            default:
-              //The next character of the address
-              pString ++;
-              index ++;
-              //The next word of the abscissa increases the font of the broadband
-              Xpoint += font->Width;
-        }
-    }
-
-    free_word_boundaries(word_head);
+    draw_string_handler(0, 0, pString,
+                         font, canvas->color, canvas->background_color, &cursor, text_options,
+                         NULL);
     VALUE hash = rb_hash_new();
-    rb_hash_aset(hash, rb_str_new2("width"), INT2FIX(Xpoint - text_options.margin_left));
-    rb_hash_aset(hash, rb_str_new2("height"), INT2FIX(Ypoint + font->Height - text_options.margin_top ));
+    rb_hash_aset(hash, rb_str_new2("width"), INT2FIX(cursor.Xcursor - text_options.margin_left));
+    rb_hash_aset(hash, rb_str_new2("height"), INT2FIX(cursor.Ycursor + font->Height - text_options.margin_top ));
     return hash;
 }
 
@@ -373,14 +323,14 @@ VALUE allocate(VALUE klass) {
     canvas->text_options.tabstops = 4;
     canvas->text_options.split_on_word_boundary = 1;
     canvas->text_options.strip_leading_spaces = 1;
-        
+
     return Data_Wrap_Struct(klass, 0, free_canvas, canvas);
 }
 
 VALUE text_options(VALUE self, VALUE settings) {
     ecanvas *canvas;
     Data_Get_Struct(self, ecanvas, canvas);
-    
+
     VALUE keys_v = rb_funcall(settings, rb_intern("keys"), 0);
     int length = RARRAY_LEN(keys_v);
     for (int i = 0; i < length; i++) {
@@ -389,7 +339,7 @@ VALUE text_options(VALUE self, VALUE settings) {
         int val = NUM2INT(rb_hash_aref(settings, k));
         if (strcasecmp(c_key, "margin_left") == 0) {
             canvas->text_options.margin_left = val;
-        } else 
+        } else
         if (strcasecmp(c_key, "margin_right") == 0) {
             canvas->text_options.margin_right = val;
         } else
