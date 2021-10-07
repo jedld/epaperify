@@ -681,7 +681,7 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
 
         pString ++;
         index ++;
-        if (newline && *pString!='\0') {
+        if (newline && text_options.strip_leading_spaces && *pString!='\0') {
             while(*pString==' ') {
                 pString++;
                 index++;
