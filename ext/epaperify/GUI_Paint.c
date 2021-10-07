@@ -680,9 +680,7 @@ void draw_string_handler(UWORD Xstart, UWORD Ystart, const char * pString,
                     pString++;
                     index++;
                 }
-                break;
               }
-
             default:
                 if (paint_callback!=NULL) {
                     paint_callback(Xpoint, Ypoint, *pString, Font, Color_Background, Color_Foreground);
