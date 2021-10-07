@@ -359,7 +359,7 @@ VALUE text_options(VALUE self, VALUE settings) {
     VALUE keys_v = rb_funcall(settings, rb_intern("keys"), 0);
     int length = RARRAY_LEN(keys_v);
     for (int i = 0; i < length; i++) {
-        VALUE k = krb_ary_entry(keys_v, i);
+        VALUE k = rb_ary_entry(keys_v, i);
         char *c_key = StringValueCStr(k);
         int val = NUM2INT(rb_hash_aref(settings, k));
         if (strcasecmp(c_key, "margin_left") == 0) {

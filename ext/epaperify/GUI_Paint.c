@@ -585,7 +585,7 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
         switch(*pString) {
             case '\n':
             case '\r':
-              Xpoint = 0;
+              Xpoint = text_options.margin_right;
               Ypoint += Font->Height + text_options.line_padding;
               pString ++;
               break;
