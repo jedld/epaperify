@@ -192,6 +192,7 @@ typedef struct {
     int margin_top;
     int tabstops;
     int split_on_word_boundary;
+    int strip_leading_spaces;
 } TEXT_OPTIONS;
 
 typedef struct word_boundary {

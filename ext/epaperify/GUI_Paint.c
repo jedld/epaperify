@@ -636,12 +636,15 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
         return;
     }
 
+    int newline = 0;
+
     while (* pString != '\0') {
         //if X direction filled , reposition to(Xstart,Ypoint),Ypoint is Y direction plus the Height of the character
         if (curword != NULL && (index == curword->index)) {
             if ((Xpoint + Font->Width * curword->characters ) > (Paint.Width - text_options.margin_right) ) {
                 Xpoint = Xstart + text_options.margin_left;
                 Ypoint += Font->Height + text_options.line_padding;
+                newline = 1;
             }
             curword = curword->next;
         }
@@ -649,6 +652,7 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
         if ((Xpoint + Font->Width ) > (Paint.Width - text_options.margin_right) ) {
             Xpoint = Xstart + text_options.margin_left;
             Ypoint += Font->Height + text_options.line_padding;
+            newline = 1;
         }
 
         // If the Y direction is full, reposition to(Xstart, Ystart)
@@ -663,22 +667,28 @@ void Paint_DrawString_EN(UWORD Xstart, UWORD Ystart, const char * pString,
             case '\r':
               Xpoint = text_options.margin_right;
               Ypoint += Font->Height + text_options.line_padding;
-              pString ++;
-              index ++;
+              newline = 1;
               break;
             case '\t':
               Xpoint += Font->Width * text_options.tabstops;
-              pString ++;
-              index ++;
               break;
             default:
-              Paint_DrawChar(Xpoint, Ypoint, * pString, Font, Color_Background, Color_Foreground);
+              Paint_DrawChar(Xpoint, Ypoint, *pString, Font, Color_Background, Color_Foreground);
               //The next character of the address
-              pString ++;
-              index ++;
               //The next word of the abscissa increases the font of the broadband
               Xpoint += Font->Width;
         }
+
+        pString ++;
+        index ++;
+        if (newline && *pString!='\0') {
+            while(*pString==' ') {
+                pString++;
+                index++;
+            }
+        }
+
+        newline = 0;
     }
 
     cursor->Xcursor = Xpoint;

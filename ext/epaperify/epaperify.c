@@ -372,6 +372,7 @@ VALUE allocate(VALUE klass) {
     canvas->red_image = NULL;
     canvas->text_options.tabstops = 4;
     canvas->text_options.split_on_word_boundary = 1;
+    canvas->text_options.strip_leading_spaces = 1;
         
     return Data_Wrap_Struct(klass, 0, free_canvas, canvas);
 }
@@ -403,6 +404,12 @@ VALUE text_options(VALUE self, VALUE settings) {
         } else
         if (strcasecmp(c_key, "tabstops") == 0) {
             canvas->text_options.tabstops = val;
+        } else
+        if (strcasecmp(c_key, "strip_leading_spaces") == 0) {
+            canvas->text_options.strip_leading_spaces = val;
+        } else
+        if (strcasecmp(c_key, "split_on_word_boundary") == 0) {
+            canvas->text_options.split_on_word_boundary = val;
         }
     }
     return Qnil;
