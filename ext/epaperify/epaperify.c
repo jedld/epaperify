@@ -565,9 +565,12 @@ VALUE initialize_font(VALUE self, int scale, VALUE font_path) {
     return Qnil;
 }
 
-VALUE render_font(VALUE self, VALUE xcoord, VALUE ycoord, VALUE codepoint) {
+VALUE render_font(VALUE self, VALUE sfont, VALUE xcoord, VALUE ycoord, VALUE codepoint) {
     efont *font;
-    Data_Get_Struct(self, efont, font);
+    ecanvas *canvas;
+    Data_Get_Struct(sfont, efont, font);
+    Data_Get_Struct(self, ecanvas, canvas);
+    Paint_SelectImage(canvas->black_image);
 
     SFT_Glyph gid;  //  unsigned long gid;
     int cp = NUM2INT(codepoint);
@@ -588,11 +591,15 @@ VALUE render_font(VALUE self, VALUE xcoord, VALUE ycoord, VALUE codepoint) {
 
 	char pixels[img.width * img.height];
 	img.pixels = pixels;
-	sft_render(&font->sft, gid, img);
+	if (sft_render(&font->sft, gid, img) < 0)
+		printf("not rendered %d", cp);
+
     for(int i = 0; i < img.width; i++) {
         for(int i2 = 0; i2 < img.height; i2++) {
+            printf("%d ", pixels[i2 * img.width + i]);
             Paint_SetPixel(x + i, y + i2, pixels[i2 * img.width + i]);
         }
+        printf("\n")
     }
     return Qnil;
 }
@@ -625,6 +632,7 @@ void Init_epaperify() {
     rb_define_method(canvasKlass, "read_bmp", read_bitmap_direct, 3);
     rb_define_method(canvasKlass, "measure", string_metrics, 1);
     rb_define_method(canvasKlass, "text_options", text_options, 1);
+    rb_define_method(canvasKlass, "render", render_font, 4);
 
     //Image Buffer
     VALUE imageBuffer = rb_define_class_under(mod, "ImageBuffer", rb_cObject);
@@ -635,5 +643,5 @@ void Init_epaperify() {
     VALUE fontKlass = rb_define_class_under(mod, "Font", rb_cObject);
     rb_define_alloc_func(fontKlass, allocate_font);
     rb_define_method(fontKlass, "initialize", initialize_font, 2);
-    rb_define_method(fontKlass, "render", render_font, 3);
+
 }
