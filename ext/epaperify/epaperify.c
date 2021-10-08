@@ -561,7 +561,7 @@ VALUE initialize_font(VALUE self, int scale, VALUE font_path) {
     font->sft.flags = SFT_DOWNWARD_Y;
 	font->sft.font = sft_loadfile(path);
 	if (font->sft.font == NULL)
-		END("TTF load failed");
+		printf("TTF load failed");
     return Qnil;
 }
 
