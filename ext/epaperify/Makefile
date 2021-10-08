@@ -82,7 +82,7 @@ optflags = -O3
 debugflags = -ggdb3
 warnflags = -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wno-tautological-compare -Wno-parentheses-equality -Wno-constant-logical-operand -Wno-self-assign -Wunused-variable -Wimplicit-int -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -Wdeprecated-declarations -Wmisleading-indentation -Wno-packed-bitfield-compat -Wsuggest-attribute=noreturn -Wsuggest-attribute=format -Wimplicit-fallthrough=0 -Wduplicated-cond -Wrestrict
 CCDLFLAGS = -fPIC
-CFLAGS   = $(CCDLFLAGS) $(cflags)  -fPIC -D USE_BCM2835_LIB -D RPI -fPIC $(ARCH_FLAG)
+CFLAGS   = $(CCDLFLAGS) $(cflags)  -fPIC -D USE_BCM2835_LIB -D RPI $(ARCH_FLAG)
 INCFLAGS = -I. -I$(arch_hdrdir) -I$(hdrdir)/ruby/backward -I$(hdrdir) -I$(srcdir)
 DEFS     = 
 CPPFLAGS = -DRUBY_EXTCONF_H=\"$(RUBY_EXTCONF_H)\"  $(DEFS) $(cppflags)
@@ -136,10 +136,10 @@ extout_prefix =
 target_prefix = /epaperify
 LOCAL_LIBS = -lbcm2835 -lm 
 LIBS = $(LIBRUBYARG_SHARED)  -lpthread -ldl -lcrypt -lm   -lc
-ORIG_SRCS = DEV_Config.c EPD_2in7b_V2.c EPD_5in83_V2.c EPD_5in83b_V2.c GUI_BMPfile.c GUI_Paint.c epaperify.c font12.c font12CN.c font16.c font20.c font24.c font24CN.c font8.c
+ORIG_SRCS = DEV_Config.c EPD_2in7b_V2.c EPD_5in83_V2.c EPD_5in83b_V2.c GUI_BMPfile.c GUI_Paint.c epaperify.c font12.c font12CN.c font16.c font20.c font24.c font24CN.c font8.c schrift.c
 SRCS = $(ORIG_SRCS) 
-OBJS = DEV_Config.o EPD_2in7b_V2.o EPD_5in83_V2.o EPD_5in83b_V2.o GUI_BMPfile.o GUI_Paint.o epaperify.o font12.o font12CN.o font16.o font20.o font24.o font24CN.o font8.o
-HDRS = $(srcdir)/EPD_2in7b_V2.h $(srcdir)/DEV_Config.h $(srcdir)/epaperify.h $(srcdir)/extconf.h $(srcdir)/fonts.h $(srcdir)/Debug.h $(srcdir)/EPD_5in83b_V2.h $(srcdir)/GUI_Paint.h $(srcdir)/GUI_BMPfile.h $(srcdir)/EPD_5in83_V2.h
+OBJS = DEV_Config.o EPD_2in7b_V2.o EPD_5in83_V2.o EPD_5in83b_V2.o GUI_BMPfile.o GUI_Paint.o epaperify.o font12.o font12CN.o font16.o font20.o font24.o font24CN.o font8.o schrift.o
+HDRS = $(srcdir)/EPD_2in7b_V2.h $(srcdir)/DEV_Config.h $(srcdir)/epaperify.h $(srcdir)/extconf.h $(srcdir)/fonts.h $(srcdir)/Debug.h $(srcdir)/EPD_5in83b_V2.h $(srcdir)/GUI_Paint.h $(srcdir)/schrift.h $(srcdir)/GUI_BMPfile.h $(srcdir)/EPD_5in83_V2.h
 LOCAL_HDRS = 
 TARGET = epaperify
 TARGET_NAME = epaperify

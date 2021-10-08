@@ -72,6 +72,7 @@
 
 #include "DEV_Config.h"
 #include "fonts.h"
+#include "schrift.h"
 
 /**
  * Image attributes

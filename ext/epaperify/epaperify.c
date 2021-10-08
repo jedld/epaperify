@@ -546,11 +546,57 @@ void free_canvas(ecanvas *canvas) {
     free(canvas);
 }
 
+void allocate_font(VALUE klass) {
+    efont *font = (efont*) malloc(sizeof(efont));
+    memset(font, 0, sizeof(efont));
+    return Data_Wrap_Struct(klass, 0, free, font);
+}
+
+VALUE initialize_font(VALUE self, int scale, VALUE font_path) {
+    efont *font;
+    Data_Get_Struct(self, efont, font);
+    char *path = StringValueCStr(font_path);
+    font->sft.xScale = 16*scale;
+    font->sft.yScale = 16*scale;
+    font->sft.flags = SFT_DOWNWARD_Y;
+	font->sft.font = sft_loadfile(path);
+	if (font->sft.font == NULL)
+		END("TTF load failed");
+    return Qnil;
+}
+
+VALUE render(VALUE self, UWORD x, UWORD y, int cp) {
+    efont *font;
+    Data_Get_Struct(self, efont, font);
+
+    SFT_Glyph gid;  //  unsigned long gid;
+	if (sft_lookup(&font->sft, cp, &gid) < 0)
+		ABORT(cp, "missing");
+
+	SFT_GMetrics mtx;
+	if (sft_gmetrics(&font->sft, gid, &mtx) < 0)
+		ABORT(cp, "bad glyph metrics");
+
+    SFT_Image img = {
+		.width  = (mtx.minWidth + 3) & ~3,
+		.height = mtx.minHeight,
+	};
+
+	char pixels[img.width * img.height];
+	img.pixels = pixels;
+	if (sft_render(&font->sft, gid, img) < 0)
+		ABORT(cp, "not rendered");
+    for(int i = 0; i < img.width; i++) {
+        for(int i2 = 0; i2 < img.height; i2++) {
+            Paint_SetPixel(x + i, y + i2, pixels[i2 * img.width + i]);
+        }
+    }
+    return Qnil;
+}
+
 void Init_epaperify() {
-    VALUE canvasKlass;
-    VALUE imageBuffer;
     VALUE mod = rb_define_module("Epaperify");
-    canvasKlass = rb_define_class_under(mod, "PaperCanvas", rb_cObject);
+    VALUE canvasKlass = rb_define_class_under(mod, "PaperCanvas", rb_cObject);
     rb_define_alloc_func(canvasKlass, allocate);
     rb_define_method(canvasKlass, "initialize", initialize, 2);
     rb_define_method(canvasKlass, "init_paper", init_paper, 0);
@@ -578,8 +624,13 @@ void Init_epaperify() {
     rb_define_method(canvasKlass, "text_options", text_options, 1);
 
     //Image Buffer
-    imageBuffer = rb_define_class_under(mod, "ImageBuffer", rb_cObject);
+    VALUE imageBuffer = rb_define_class_under(mod, "ImageBuffer", rb_cObject);
     rb_define_alloc_func(imageBuffer, allocate_image_buffer);
     rb_define_method(imageBuffer, "initialize", initialize_image_buffer, 1);
     rb_define_method(imageBuffer, "read_bmp", read_bitmap, 3);
+
+    VALUE fontKlass = rb_define_class_under(mod, "Font", rb_cObject);
+    rb_define_alloc_func(fontKlass, allocate_font);
+    rb_define_method(fontKlass, "initialize", initialize_font, 2);
+    rb_define_method(fontKlass, "render", initialize_image_buffer, 3);
 }

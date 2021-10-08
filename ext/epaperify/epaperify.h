@@ -1,13 +1,13 @@
 #include <ruby.h>
 #include "extconf.h"
 #include <stdlib.h>
-#include <signal.h> 
+#include <signal.h>
 #include "EPD_2in7b_V2.h"
 #include "EPD_5in83b_V2.h"
 #include "EPD_5in83_V2.h"
 #include "GUI_Paint.h"
 #include "GUI_BMPfile.h"
-#include <time.h> 
+#include <time.h>
 
 #ifndef _EPAPERIFY_h_
 #define _EPAPERIFY_h_
@@ -47,6 +47,10 @@ typedef struct epaper_canvas {
     epaper_interface interface;
     TEXT_OPTIONS text_options;
 } ecanvas;
+
+typedef struct epaper_font {
+    SFT sft;
+} efont;
 
 sFONT *size_to_font(UWORD font_size);
 
