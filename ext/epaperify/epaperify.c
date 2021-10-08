@@ -599,7 +599,7 @@ VALUE render_font(VALUE self, VALUE sfont, VALUE xcoord, VALUE ycoord, VALUE cod
             printf("%d ", pixels[i2 * img.width + i]);
             Paint_SetPixel(x + i, y + i2, pixels[i2 * img.width + i]);
         }
-        printf("\n")
+        printf("\n");
     }
     return Qnil;
 }
