@@ -565,17 +565,12 @@ VALUE initialize_font(VALUE self, int scale, VALUE font_path) {
     return Qnil;
 }
 
-VALUE render_font(VALUE self, VALUE sfont, VALUE xcoord, VALUE ycoord, VALUE codepoint) {
+VALUE render_font(VALUE sfont, VALUE codepoint) {
     efont *font;
-    ecanvas *canvas;
     Data_Get_Struct(sfont, efont, font);
-    Data_Get_Struct(self, ecanvas, canvas);
-    Paint_SelectImage(canvas->black_image);
 
     SFT_Glyph gid;  //  unsigned long gid;
     int cp = NUM2INT(codepoint);
-    int x = NUM2INT(xcoord);
-    int y = NUM2INT(ycoord);
 
 	if (sft_lookup(&font->sft, cp, &gid) < 0)
 		printf("missing %d", cp);
@@ -594,13 +589,41 @@ VALUE render_font(VALUE self, VALUE sfont, VALUE xcoord, VALUE ycoord, VALUE cod
 	if (sft_render(&font->sft, gid, img) < 0)
 		printf("not rendered %d", cp);
 
+    VALUE columns = rb_ary_new_capa(img.width);
     for(int i = 0; i < img.width; i++) {
+        VALUE rows = rb_ary_new_capa(img.height);
         for(int i2 = 0; i2 < img.height; i2++) {
-            int color = pixels[i2 * img.width + i] > 0 ? BLACK : WHITE;
+             rb_ary_push(rows, INT2NUM(pixels[i2 * img.width + i]));
+        }
+        rb_ary_push(columns, rows);
+    }
+
+    return columns;
+}
+
+VALUE render_pixels(VALUE self, VALUE xcoord, VALUE ycoord, VALUE rb_arr, VALUE color_plane) {
+    ecanvas *canvas;
+    Data_Get_Struct(self, ecanvas, canvas);
+
+    int x = NUM2INT(xcoord);
+    int y = NUM2INT(ycoord);
+    int plane = NUM2INT(color_plane);
+    if (color_plane == 0) {
+      Paint_SelectImage(canvas->black_image);
+    } else {
+      Paint_SelectImage(canvas->red_image);
+    }
+
+    int cols_length = RARRAY_LEN(rb_arr);
+    for (int i = 0; i < cols_length; i++) {
+        VALUE cols_arr = rb_ary_entry(rb_arr, i);
+        VALUE rows_length = RARRAY_LEN(cols_arr);
+        for(int i2 = 0; i2 < rows_length; i2++) {
+            VALUE rb_color = rb_ary_entry(cols_arr, i2);
+            int color = NUM2INT(rb_color) > 0 ? BLACK : WHITE;
             Paint_SetPixel(x + i, y + i2, color);
         }
     }
-
     return Qnil;
 }
 
@@ -632,7 +655,7 @@ void Init_epaperify() {
     rb_define_method(canvasKlass, "read_bmp", read_bitmap_direct, 3);
     rb_define_method(canvasKlass, "measure", string_metrics, 1);
     rb_define_method(canvasKlass, "text_options", text_options, 1);
-    rb_define_method(canvasKlass, "render_font", render_font, 4);
+    rb_define_method(canvasKlass, "render_pixels", render_pixels, 4);
 
     //Image Buffer
     VALUE imageBuffer = rb_define_class_under(mod, "ImageBuffer", rb_cObject);
@@ -643,5 +666,5 @@ void Init_epaperify() {
     VALUE fontKlass = rb_define_class_under(mod, "Font", rb_cObject);
     rb_define_alloc_func(fontKlass, allocate_font);
     rb_define_method(fontKlass, "initialize", initialize_font, 2);
-
+    rb_define_method(fontKlass, "render_font", render_font, 1);
 }
