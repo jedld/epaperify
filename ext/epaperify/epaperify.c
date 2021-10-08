@@ -596,11 +596,12 @@ VALUE render_font(VALUE self, VALUE sfont, VALUE xcoord, VALUE ycoord, VALUE cod
 
     for(int i = 0; i < img.width; i++) {
         for(int i2 = 0; i2 < img.height; i2++) {
-            printf("%d ", pixels[i2 * img.width + i]);
-            Paint_SetPixel(x + i, y + i2, pixels[i2 * img.width + i]);
+            int color = pixels[i2 * img.width + i] > 0 ? BLACK : WHITE;
+            Paint_SetPixel(x + i, y + i2, color);
         }
-        printf("\n");
     }
+
+
     return Qnil;
 }
 
@@ -632,7 +633,7 @@ void Init_epaperify() {
     rb_define_method(canvasKlass, "read_bmp", read_bitmap_direct, 3);
     rb_define_method(canvasKlass, "measure", string_metrics, 1);
     rb_define_method(canvasKlass, "text_options", text_options, 1);
-    rb_define_method(canvasKlass, "render", render_font, 4);
+    rb_define_method(canvasKlass, "render_font", render_font, 4);
 
     //Image Buffer
     VALUE imageBuffer = rb_define_class_under(mod, "ImageBuffer", rb_cObject);
