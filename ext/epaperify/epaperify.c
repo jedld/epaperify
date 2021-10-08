@@ -570,12 +570,10 @@ VALUE render(VALUE self, UWORD x, UWORD y, int cp) {
     Data_Get_Struct(self, efont, font);
 
     SFT_Glyph gid;  //  unsigned long gid;
-	if (sft_lookup(&font->sft, cp, &gid) < 0)
-		ABORT(cp, "missing");
+	sft_lookup(&font->sft, cp, &gid);
 
 	SFT_GMetrics mtx;
-	if (sft_gmetrics(&font->sft, gid, &mtx) < 0)
-		ABORT(cp, "bad glyph metrics");
+	sft_gmetrics(&font->sft, gid, &mtx);
 
     SFT_Image img = {
 		.width  = (mtx.minWidth + 3) & ~3,
@@ -584,8 +582,7 @@ VALUE render(VALUE self, UWORD x, UWORD y, int cp) {
 
 	char pixels[img.width * img.height];
 	img.pixels = pixels;
-	if (sft_render(&font->sft, gid, img) < 0)
-		ABORT(cp, "not rendered");
+	sft_render(&font->sft, gid, img);
     for(int i = 0; i < img.width; i++) {
         for(int i2 = 0; i2 < img.height; i2++) {
             Paint_SetPixel(x + i, y + i2, pixels[i2 * img.width + i]);
