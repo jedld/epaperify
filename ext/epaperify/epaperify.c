@@ -565,15 +565,21 @@ VALUE initialize_font(VALUE self, int scale, VALUE font_path) {
     return Qnil;
 }
 
-VALUE render(VALUE self, UWORD x, UWORD y, int cp) {
+VALUE render_font(VALUE self, VALUE xcoord, VALUE ycoord, VALUE codepoint) {
     efont *font;
     Data_Get_Struct(self, efont, font);
 
     SFT_Glyph gid;  //  unsigned long gid;
-	sft_lookup(&font->sft, cp, &gid);
+    int cp = NUM2INT(codepoint);
+    int x = NUM2INT(xcoord);
+    int y = NUM2INT(ycoord);
+
+	if (sft_lookup(&font->sft, cp, &gid) < 0)
+		printf("missing %d", cp);
 
 	SFT_GMetrics mtx;
-	sft_gmetrics(&font->sft, gid, &mtx);
+	if (sft_gmetrics(&font->sft, gid, &mtx) < 0)
+		printf("bad glyph metrics %d", cp);
 
     SFT_Image img = {
 		.width  = (mtx.minWidth + 3) & ~3,
@@ -629,5 +635,5 @@ void Init_epaperify() {
     VALUE fontKlass = rb_define_class_under(mod, "Font", rb_cObject);
     rb_define_alloc_func(fontKlass, allocate_font);
     rb_define_method(fontKlass, "initialize", initialize_font, 2);
-    rb_define_method(fontKlass, "render", initialize_image_buffer, 3);
+    rb_define_method(fontKlass, "render", render_font, 3);
 }
