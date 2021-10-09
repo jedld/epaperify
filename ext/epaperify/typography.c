@@ -6,6 +6,24 @@ void allocate_font(VALUE klass) {
     return Data_Wrap_Struct(klass, 0, free, font);
 }
 
+VALUE font_ascender(VALUE self) {
+  efont *font;
+  Data_Get_Struct(self, efont, font);
+  return DBL2NUM(font->ascender);
+}
+
+VALUE font_descender(VALUE self) {
+  efont *font;
+  Data_Get_Struct(self, efont, font);
+  return DBL2NUM(font->descender);
+}
+
+VALUE font_linegap(VALUE self) {
+  efont *font;
+  Data_Get_Struct(self, efont, font);
+  return DBL2NUM(font->linegap);
+}
+
 void allocate_font_render(VALUE klass) {
     efont_render *font_render = (efont_render*) malloc(sizeof(efont_render));
     memset(font_render, 0, sizeof(efont_render));
@@ -42,9 +60,17 @@ VALUE initialize_font(VALUE self, int scale, VALUE font_path) {
     font->sft.xScale = scale;
     font->sft.yScale = scale;
     font->sft.flags = SFT_DOWNWARD_Y;
-	font->sft.font = sft_loadfile(path);
-	if (font->sft.font == NULL)
-		printf("TTF load failed");
+	  font->sft.font = sft_loadfile(path);
+
+    SFT_LMetrics lmtx;
+    sft_lmetrics(&font->sft, &lmtx);
+
+    efont->ascender = lmtx.ascender;
+    efont->descender = lmtx.descender;
+    efont->linegap = lmtx.lineGap;
+
+	  if (font->sft.font == NULL)
+		 printf("TTF load failed");
     return Qnil;
 }
 

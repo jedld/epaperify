@@ -500,4 +500,7 @@ void Init_epaperify() {
     rb_define_alloc_func(fontKlass, allocate_font);
     rb_define_method(fontKlass, "initialize", initialize_font, 2);
     rb_define_method(fontKlass, "render_font", render_font, 1);
+    rb_define_method(fontKlass, "linegap", font_linegap, 0);
+    rb_define_method(fontKlass, "descender", font_descender, 0);
+    rb_define_method(fontKlass, "ascender", font_ascender, 0);
 }

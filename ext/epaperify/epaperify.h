@@ -50,6 +50,9 @@ typedef struct epaper_canvas {
 
 typedef struct epaper_font {
     SFT sft;
+    double ascender;
+    double descender;
+    double linegap;
 } efont;
 
 typedef struct epaper_font_render {

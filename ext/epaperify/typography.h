@@ -13,4 +13,8 @@ VALUE font_render_width(VALUE self);
 VALUE font_render_height(VALUE self);
 VALUE font_render_yoffset(VALUE self);
 
+VALUE font_linegap(VALUE self);
+VALUE font_descender(VALUE self);
+VALUE font_ascender(VALUE self);
+
 #endif
