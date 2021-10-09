@@ -7,7 +7,7 @@ font = Epaperify::Font.new(8, "FiraGO-Regular.ttf")
 font2 = Epaperify::Font.new(8, "ubuntu.ttf")
 
 
-text = Epaperify::Text.new(font, canvas)
+text = Epaperify::Text.new(font2, canvas)
 text.render_string "Hello World!"
 
 canvas.show

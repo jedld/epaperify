@@ -65,9 +65,9 @@ VALUE initialize_font(VALUE self, int scale, VALUE font_path) {
     SFT_LMetrics lmtx;
     sft_lmetrics(&font->sft, &lmtx);
 
-    efont->ascender = lmtx.ascender;
-    efont->descender = lmtx.descender;
-    efont->linegap = lmtx.lineGap;
+    font->ascender = lmtx.ascender;
+    font->descender = lmtx.descender;
+    font->linegap = lmtx.lineGap;
 
 	  if (font->sft.font == NULL)
 		 printf("TTF load failed");
@@ -100,6 +100,7 @@ VALUE render_font(VALUE sfont, VALUE codepoint) {
       .width  = (mtx.minWidth + 3) & ~3,
       .height = mtx.minHeight,
     };
+
 
     font_render->render_buffer = (char*)malloc(img.width * img.height);
     font_render->height = img.height;
