@@ -17,6 +17,18 @@ void free_font_render(efont_render *font_render) {
     free(font_render);
 }
 
+VALUE font_render_width(VALUE self) {
+  efont_render *font_render;
+  Data_Get_Struct(self, efont_render, font_render);
+  return INT2NUM(font_render->width);
+}
+
+VALUE font_render_height(VALUE self) {
+  efont_render *font_render;
+  Data_Get_Struct(self, efont_render, font_render);
+  return INT2NUM(font_render->height);
+}
+
 VALUE initialize_font(VALUE self, int scale, VALUE font_path) {
     efont *font;
     Data_Get_Struct(self, efont, font);
@@ -39,7 +51,8 @@ VALUE render_font(VALUE sfont, VALUE codepoint) {
     SFT_Glyph gid;  //  unsigned long gid;
     int cp = NUM2INT(codepoint);
 
-    VALUE font_render_klass = rb_const_get(rb_cObject, rb_intern("FontRender"));
+    VALUE module = rb_const_get(rb_cObject, rb_intern("Epaperify"));
+    VALUE font_render_klass = rb_const_get(module, rb_intern("FontRender"));
     VALUE rb_font_render = rb_funcall(font_render_klass, rb_intern("new"), 0);
     Data_Get_Struct(rb_font_render, efont_render, font_render);
 

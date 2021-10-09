@@ -130,7 +130,7 @@ VALUE render_font_buffer(VALUE self, VALUE xcoord, VALUE ycoord, VALUE rb_font_b
     int x = NUM2INT(xcoord);
     int y = NUM2INT(ycoord);
     int plane = NUM2INT(color_plane);
-    if (color_plane == 0) {
+    if (plane == 0) {
       Paint_SelectImage(canvas->black_image);
     } else {
       Paint_SelectImage(canvas->red_image);
@@ -138,8 +138,8 @@ VALUE render_font_buffer(VALUE self, VALUE xcoord, VALUE ycoord, VALUE rb_font_b
 
     for (int i = 0; i < render_buffer->height; i++) {
         for(int i2 = 0; i2 < render_buffer->width; i2++) {
-            int color = NUM2INT(render_buffer->render_buffer[i2*render_buffer->width + i]) > 0 ? BLACK : WHITE;
-            Paint_SetPixel(x + i, y + i2, color);
+            int color = render_buffer->render_buffer[i*render_buffer->width + i2] > 100 ? BLACK : WHITE;
+            Paint_SetPixel(x + i2, y + i, color);
         }
     }
     return Qnil;
