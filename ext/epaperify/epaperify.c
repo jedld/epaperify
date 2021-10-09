@@ -494,6 +494,7 @@ void Init_epaperify() {
     rb_define_method(fontRender, "to_a", render_font_to_a, 0);
     rb_define_method(fontRender, "width", font_render_width, 0);
     rb_define_method(fontRender, "height", font_render_height, 0);
+    rb_define_method(fontRender, "yoffset", font_render_yoffset, 0);
 
     VALUE fontKlass = rb_define_class_under(mod, "Font", rb_cObject);
     rb_define_alloc_func(fontKlass, allocate_font);

@@ -29,6 +29,12 @@ VALUE font_render_height(VALUE self) {
   return INT2NUM(font_render->height);
 }
 
+VALUE font_render_yoffset(VALUE self) {
+  efont_render *font_render;
+  Data_Get_Struct(self, efont_render, font_render);
+  return INT2NUM(font_render->height);
+}
+
 VALUE initialize_font(VALUE self, int scale, VALUE font_path) {
     efont *font;
     Data_Get_Struct(self, efont, font);
@@ -72,6 +78,7 @@ VALUE render_font(VALUE sfont, VALUE codepoint) {
     font_render->render_buffer = (char*)malloc(img.width * img.height);
     font_render->height = img.height;
     font_render->width = img.width;
+    font_render->yoffset = mtx.yOffset;
 
     img.pixels = (void*)font_render->render_buffer;
     if (sft_render(&font->sft, gid, img) < 0)

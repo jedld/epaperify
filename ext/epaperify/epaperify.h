@@ -56,6 +56,7 @@ typedef struct epaper_font_render {
     efont *font;
     unsigned int width;
     unsigned int height;
+    unsigned int yoffset;
     char *render_buffer;
 } efont_render;
 

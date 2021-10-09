@@ -11,5 +11,6 @@ void free_font_render(efont_render *font_render);
 VALUE render_font_to_a(VALUE self);
 VALUE font_render_width(VALUE self);
 VALUE font_render_height(VALUE self);
+VALUE font_render_yoffset(VALUE self);
 
 #endif
