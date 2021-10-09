@@ -39,8 +39,8 @@ VALUE render_font(VALUE sfont, VALUE codepoint) {
     SFT_Glyph gid;  //  unsigned long gid;
     int cp = NUM2INT(codepoint);
 
-    VALUE font_render = rb_const_get(rb_cObject, rb_intern("FontRender"));
-    VALUE rb_font_render = rb_funcall(font_render, rb_intern("new"), 0);
+    VALUE font_render_klass = rb_const_get(rb_cObject, rb_intern("FontRender"));
+    VALUE rb_font_render = rb_funcall(font_render_klass, rb_intern("new"), 0);
     Data_Get_Struct(rb_font_render, efont_render, font_render);
 
 
@@ -56,20 +56,13 @@ VALUE render_font(VALUE sfont, VALUE codepoint) {
       .height = mtx.minHeight,
     };
 
-    char pixels[img.width * img.height];
-    img.pixels = pixels;
-    if (sft_render(&font->sft, gid, img) < 0)
-      printf("not rendered %d", cp);
-
     font_render->render_buffer = (char*)malloc(img.width * img.height);
     font_render->height = img.height;
     font_render->width = img.width;
 
-    for(int i = 0; i < img.width; i++) {
-      for(int i2 = 0; i2 < img.height; i2++) {
-        font_render->render_buffer[i2 * img.width + i] =  INT2NUM(pixels[i2 * img.width + i]);
-      }
-    }
+    img.pixels = (void*)font_render->render_buffer;
+    if (sft_render(&font->sft, gid, img) < 0)
+      printf("not rendered %d", cp);
 
     return rb_font_render;
 }
@@ -79,10 +72,10 @@ VALUE render_font_to_a(VALUE self) {
   Data_Get_Struct(self, efont_render, font_render);
 
   VALUE columns = rb_ary_new_capa(font_render->width);
-    for(int i = 0; i < img.width; i++) {
-        VALUE rows = rb_ary_new_capa(img.height);
-        for(int i2 = 0; i2 < img.height; i2++) {
-              rb_ary_push(rows, INT2NUM(font_render->render_buffer[i2 * img.width + i]));
+    for(int i = 0; i < font_render->width; i++) {
+        VALUE rows = rb_ary_new_capa(font_render->height);
+        for(int i2 = 0; i2 < font_render->height; i2++) {
+              rb_ary_push(rows, INT2NUM(font_render->render_buffer[i2 * font_render->width + i]));
         }
         rb_ary_push(columns, rows);
     }

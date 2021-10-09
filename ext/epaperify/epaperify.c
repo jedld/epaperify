@@ -82,10 +82,6 @@ VALUE init_paper() {
     EPD_2IN7B_V2_Init();
 }
 
-
-
-void free_canvas(ecanvas *canvas);
-
 void paint(ecanvas *canvas, int x, int y, char *message, CURSOR *cursor) {
     sFONT *font;
     uint16_t color;
@@ -454,12 +450,7 @@ VALUE read_bitmap_4g(VALUE self, VALUE filename, VALUE xstart, VALUE ystart) {
     return Qnil;
 }
 
-void free_canvas(ecanvas *canvas) {
-    printf("canvas free");
-    if (canvas->black_image!=NULL) free(canvas->black_image);
-    if (canvas->red_image!=NULL) free(canvas->red_image);
-    free(canvas);
-}
+
 
 void Init_epaperify() {
     VALUE mod = rb_define_module("Epaperify");

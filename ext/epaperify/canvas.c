@@ -56,6 +56,13 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation) {
     return Qnil;
 }
 
+void free_canvas(ecanvas *canvas) {
+    printf("canvas free");
+    if (canvas->black_image!=NULL) free(canvas->black_image);
+    if (canvas->red_image!=NULL) free(canvas->red_image);
+    free(canvas);
+}
+
 VALUE allocate(VALUE klass) {
     ecanvas *canvas = (ecanvas*) malloc(sizeof(ecanvas));
     memset(canvas, 0, sizeof(ecanvas));
