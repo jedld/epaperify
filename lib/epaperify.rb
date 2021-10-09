@@ -30,3 +30,4 @@ module Epaperify
 end
 
 require "epaperify/epaperify"
+require "epaperify/text"
