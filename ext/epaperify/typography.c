@@ -32,7 +32,7 @@ VALUE font_render_height(VALUE self) {
 VALUE font_render_yoffset(VALUE self) {
   efont_render *font_render;
   Data_Get_Struct(self, efont_render, font_render);
-  return INT2NUM(font_render->height);
+  return INT2NUM(font_render->yoffset);
 }
 
 VALUE initialize_font(VALUE self, int scale, VALUE font_path) {
