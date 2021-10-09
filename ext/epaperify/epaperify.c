@@ -495,6 +495,8 @@ void Init_epaperify() {
     rb_define_method(fontRender, "width", font_render_width, 0);
     rb_define_method(fontRender, "height", font_render_height, 0);
     rb_define_method(fontRender, "yoffset", font_render_yoffset, 0);
+    rb_define_method(fontRender, "advance_width", font_render_advance_width, 0);
+    rb_define_method(fontRender, "leftside_bearing", font_render_leftside_bearing, 0);
 
     VALUE fontKlass = rb_define_class_under(mod, "Font", rb_cObject);
     rb_define_alloc_func(fontKlass, allocate_font);
@@ -503,4 +505,5 @@ void Init_epaperify() {
     rb_define_method(fontKlass, "linegap", font_linegap, 0);
     rb_define_method(fontKlass, "descender", font_descender, 0);
     rb_define_method(fontKlass, "ascender", font_ascender, 0);
+    rb_define_method(fontKlass, "scale", font_scale, 0);
 }

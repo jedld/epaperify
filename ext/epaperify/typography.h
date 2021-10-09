@@ -12,9 +12,13 @@ VALUE render_font_to_a(VALUE self);
 VALUE font_render_width(VALUE self);
 VALUE font_render_height(VALUE self);
 VALUE font_render_yoffset(VALUE self);
+VALUE font_render_advance_width(VALUE self);
+VALUE font_render_leftside_bearing(VALUE self);
+
 
 VALUE font_linegap(VALUE self);
 VALUE font_descender(VALUE self);
 VALUE font_ascender(VALUE self);
+VALUE font_scale(VALUE self);
 
 #endif

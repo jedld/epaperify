@@ -24,6 +24,12 @@ VALUE font_linegap(VALUE self) {
   return DBL2NUM(font->linegap);
 }
 
+VALUE font_scale(VALUE self) {
+  efont *font;
+  Data_Get_Struct(self, efont, font);
+  return INT2NUM(font->scale);
+}
+
 void allocate_font_render(VALUE klass) {
     efont_render *font_render = (efont_render*) malloc(sizeof(efont_render));
     memset(font_render, 0, sizeof(efont_render));
@@ -56,13 +62,13 @@ VALUE font_render_yoffset(VALUE self) {
 VALUE font_render_advance_width(VALUE self) {
   efont_render *font_render;
   Data_Get_Struct(self, efont_render, font_render);
-  return INT2NUM(font_render->advance_width);
+  return DBL2NUM(font_render->advance_width);
 }
 
 VALUE font_render_leftside_bearing(VALUE self) {
   efont_render *font_render;
   Data_Get_Struct(self, efont_render, font_render);
-  return INT2NUM(font_render->leftside_bearing);
+  return DBL2NUM(font_render->leftside_bearing);
 }
 
 VALUE initialize_font(VALUE self, int scale, VALUE font_path) {
@@ -80,6 +86,7 @@ VALUE initialize_font(VALUE self, int scale, VALUE font_path) {
     font->ascender = lmtx.ascender;
     font->descender = lmtx.descender;
     font->linegap = lmtx.lineGap;
+    font->scale = scale;
 
 	  if (font->sft.font == NULL)
 		 printf("TTF load failed");
