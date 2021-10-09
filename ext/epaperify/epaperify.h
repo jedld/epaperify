@@ -53,6 +53,7 @@ typedef struct epaper_font {
     double ascender;
     double descender;
     double linegap;
+    int scale;
 } efont;
 
 typedef struct epaper_font_render {
@@ -60,6 +61,8 @@ typedef struct epaper_font_render {
     unsigned int width;
     unsigned int height;
     unsigned int yoffset;
+    double advance_width;
+    double leftside_bearing;
     char *render_buffer;
 } efont_render;
 

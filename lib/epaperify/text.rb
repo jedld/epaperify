@@ -22,7 +22,7 @@ module Epaperify
         font = @font_cache[c.ord]
         puts font.yoffset
 
-        @canvas.render_font_buffer(x_point, y_point, font, 0)
+        @canvas.render_font_buffer(x_point, y_point + font.yoffset, font, 0)
         x_point+= font.width
       end
     end
