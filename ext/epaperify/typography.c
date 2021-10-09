@@ -1,0 +1,90 @@
+#include "typography.h"
+
+void allocate_font(VALUE klass) {
+    efont *font = (efont*) malloc(sizeof(efont));
+    memset(font, 0, sizeof(efont));
+    return Data_Wrap_Struct(klass, 0, free, font);
+}
+
+void allocate_font_render(VALUE klass) {
+    efont_render *font_render = (efont_render*) malloc(sizeof(efont_render));
+    memset(font_render, 0, sizeof(efont_render));
+    return Data_Wrap_Struct(klass, 0, free_font_render, font_render);
+}
+
+void free_font_render(efont_render *font_render) {
+    if (font_render->render_buffer != NULL) free(font_render->render_buffer);
+    free(font_render);
+}
+
+VALUE initialize_font(VALUE self, int scale, VALUE font_path) {
+    efont *font;
+    Data_Get_Struct(self, efont, font);
+    char *path = StringValueCStr(font_path);
+    font->sft.xScale = scale;
+    font->sft.yScale = scale;
+    font->sft.flags = SFT_DOWNWARD_Y;
+	font->sft.font = sft_loadfile(path);
+	if (font->sft.font == NULL)
+		printf("TTF load failed");
+    return Qnil;
+}
+
+VALUE render_font(VALUE sfont, VALUE codepoint) {
+    efont *font;
+    efont_render *font_render;
+
+    Data_Get_Struct(sfont, efont, font);
+
+    SFT_Glyph gid;  //  unsigned long gid;
+    int cp = NUM2INT(codepoint);
+
+    VALUE font_render = rb_const_get(rb_cObject, rb_intern("FontRender"));
+    VALUE rb_font_render = rb_funcall(font_render, rb_intern("new"), 0);
+    Data_Get_Struct(rb_font_render, efont_render, font_render);
+
+
+    if (sft_lookup(&font->sft, cp, &gid) < 0)
+      printf("missing %d", cp);
+
+    SFT_GMetrics mtx;
+    if (sft_gmetrics(&font->sft, gid, &mtx) < 0)
+      printf("bad glyph metrics %d", cp);
+
+      SFT_Image img = {
+      .width  = (mtx.minWidth + 3) & ~3,
+      .height = mtx.minHeight,
+    };
+
+    char pixels[img.width * img.height];
+    img.pixels = pixels;
+    if (sft_render(&font->sft, gid, img) < 0)
+      printf("not rendered %d", cp);
+
+    font_render->render_buffer = (char*)malloc(img.width * img.height);
+    font_render->height = img.height;
+    font_render->width = img.width;
+
+    for(int i = 0; i < img.width; i++) {
+      for(int i2 = 0; i2 < img.height; i2++) {
+        font_render->render_buffer[i2 * img.width + i] =  INT2NUM(pixels[i2 * img.width + i]);
+      }
+    }
+
+    return rb_font_render;
+}
+
+VALUE render_font_to_a(VALUE self) {
+  efont_render *font_render;
+  Data_Get_Struct(self, efont_render, font_render);
+
+  VALUE columns = rb_ary_new_capa(font_render->width);
+    for(int i = 0; i < img.width; i++) {
+        VALUE rows = rb_ary_new_capa(img.height);
+        for(int i2 = 0; i2 < img.height; i2++) {
+              rb_ary_push(rows, INT2NUM(font_render->render_buffer[i2 * img.width + i]));
+        }
+        rb_ary_push(columns, rows);
+    }
+  return columns;
+}

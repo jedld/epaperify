@@ -1,4 +1,6 @@
 #include "epaperify.h"
+#include "canvas.h"
+#include "typography.h"
 
 /* void EPD_2IN7_V2_Init(void)
 {
@@ -132,19 +134,6 @@ sFONT *size_to_font(UWORD font_size) {
     return font;
 }
 
-VALUE draw_string(VALUE self, VALUE xval, VALUE yval, VALUE message) {
-    ecanvas *canvas;
-
-    CURSOR cursor;
-    char *our_c_string = StringValueCStr(message);
-
-    Data_Get_Struct(self, ecanvas, canvas);
-    int x = NUM2INT(xval);
-    int y = NUM2INT(yval);
-
-    paint(canvas, x, y, our_c_string, &cursor);
-    return Qnil;
-}
 
 VALUE set_display_window(VALUE self, VALUE xstart, VALUE ystart, VALUE xend, VALUE yend) {
     ecanvas *canvas;
@@ -309,24 +298,6 @@ VALUE string_metrics(VALUE self, VALUE astring) {
     return hash;
 }
 
-VALUE allocate(VALUE klass) {
-    ecanvas *canvas = (ecanvas*) malloc(sizeof(ecanvas));
-    memset(canvas, 0, sizeof(ecanvas));
-
-    canvas->color = BLACK;
-    canvas->background_color = WHITE;
-    canvas->font_size = 12;
-    canvas->Xcursor = 0;
-    canvas->Ycursor = 0;
-    canvas->black_image = NULL;
-    canvas->red_image = NULL;
-    canvas->text_options.tabstops = 4;
-    canvas->text_options.split_on_word_boundary = 1;
-    canvas->text_options.strip_leading_spaces = 1;
-
-    return Data_Wrap_Struct(klass, 0, free_canvas, canvas);
-}
-
 VALUE text_options(VALUE self, VALUE settings) {
     ecanvas *canvas;
     Data_Get_Struct(self, ecanvas, canvas);
@@ -483,148 +454,11 @@ VALUE read_bitmap_4g(VALUE self, VALUE filename, VALUE xstart, VALUE ystart) {
     return Qnil;
 }
 
-VALUE initialize(VALUE self, VALUE model, VALUE rotation) {
-    ecanvas *canvas;
-    Data_Get_Struct(self, ecanvas, canvas);
-    printf("allocating canvas");
-    DEV_Module_Init();
-    int bitsperpixel = 1;
-    canvas->rotation = NUM2INT(rotation);
-
-    // Add new model support here!
-    switch(NUM2INT(model)) {
-        case EPD_2IN7B_V2:
-           canvas->interface.init_func = &EPD_2IN7B_V2_Init;
-           canvas->interface.display_rb = &EPD_2IN7B_V2_Display;
-           canvas->interface.sleep = &EPD_2IN7B_V2_Sleep;
-           canvas->bpp = 1;
-           canvas->width = EPD_2IN7B_V2_WIDTH;
-           canvas->height = EPD_2IN7B_V2_HEIGHT;
-           break;
-        case EPD_5IN83B_V2:
-           canvas->interface.init_func = &EPD_5IN83B_V2_Init;
-           canvas->interface.display_rb = &EPD_5IN83B_V2_Display;
-           canvas->interface.sleep = &EPD_5IN83B_V2_Sleep;
-           canvas->width = EPD_5IN83B_V2_WIDTH;
-           canvas->height = EPD_5IN83B_V2_HEIGHT;
-           break;
-        case EPD_5IN83_V2:
-           canvas->interface.init_func = &EPD_5in83_V2_Init;
-           canvas->interface.display = &EPD_5in83_V2_Display;
-           canvas->interface.sleep = &EPD_5in83_V2_Sleep;
-           canvas->bpp = 1;
-           canvas->width = EPD_5in83_V2_WIDTH;
-           canvas->height = EPD_5in83_V2_HEIGHT;
-           break;
-    }
-
-    canvas->interface.init_func();
-    UWORD Imagesize = (( canvas->width % 8 == 0)? ( canvas->width / 8 ): ( canvas->width / 8 + 1)) * canvas->height;
-    if((canvas->black_image = (UBYTE *)malloc(Imagesize)) == NULL) {
-        printf("Failed to apply for black memory...\r\n");
-        return -1;
-    }
-
-    if((canvas->red_image = (UBYTE *)malloc(Imagesize)) == NULL) {
-        printf("Failed to apply for red memory...\r\n");
-        return -1;
-    }
-
-    Paint_NewImage(canvas->black_image, canvas->width , canvas->height, canvas->rotation, WHITE);
-    Paint_NewImage(canvas->red_image, canvas->width, canvas->height, canvas->rotation, WHITE);
-    Paint_SelectImage(canvas->black_image);
-    Paint_Clear(WHITE);
-    Paint_SelectImage(canvas->red_image);
-    Paint_Clear(WHITE);
-    return Qnil;
-}
-
 void free_canvas(ecanvas *canvas) {
     printf("canvas free");
     if (canvas->black_image!=NULL) free(canvas->black_image);
     if (canvas->red_image!=NULL) free(canvas->red_image);
     free(canvas);
-}
-
-void allocate_font(VALUE klass) {
-    efont *font = (efont*) malloc(sizeof(efont));
-    memset(font, 0, sizeof(efont));
-    return Data_Wrap_Struct(klass, 0, free, font);
-}
-
-VALUE initialize_font(VALUE self, int scale, VALUE font_path) {
-    efont *font;
-    Data_Get_Struct(self, efont, font);
-    char *path = StringValueCStr(font_path);
-    font->sft.xScale = scale;
-    font->sft.yScale = scale;
-    font->sft.flags = SFT_DOWNWARD_Y;
-	font->sft.font = sft_loadfile(path);
-	if (font->sft.font == NULL)
-		printf("TTF load failed");
-    return Qnil;
-}
-
-VALUE render_font(VALUE sfont, VALUE codepoint) {
-    efont *font;
-    Data_Get_Struct(sfont, efont, font);
-
-    SFT_Glyph gid;  //  unsigned long gid;
-    int cp = NUM2INT(codepoint);
-
-	if (sft_lookup(&font->sft, cp, &gid) < 0)
-		printf("missing %d", cp);
-
-	SFT_GMetrics mtx;
-	if (sft_gmetrics(&font->sft, gid, &mtx) < 0)
-		printf("bad glyph metrics %d", cp);
-
-    SFT_Image img = {
-		.width  = (mtx.minWidth + 3) & ~3,
-		.height = mtx.minHeight,
-	};
-
-	char pixels[img.width * img.height];
-	img.pixels = pixels;
-	if (sft_render(&font->sft, gid, img) < 0)
-		printf("not rendered %d", cp);
-
-    VALUE columns = rb_ary_new_capa(img.width);
-    for(int i = 0; i < img.width; i++) {
-        VALUE rows = rb_ary_new_capa(img.height);
-        for(int i2 = 0; i2 < img.height; i2++) {
-             rb_ary_push(rows, INT2NUM(pixels[i2 * img.width + i]));
-        }
-        rb_ary_push(columns, rows);
-    }
-
-    return columns;
-}
-
-VALUE render_pixels(VALUE self, VALUE xcoord, VALUE ycoord, VALUE rb_arr, VALUE color_plane) {
-    ecanvas *canvas;
-    Data_Get_Struct(self, ecanvas, canvas);
-
-    int x = NUM2INT(xcoord);
-    int y = NUM2INT(ycoord);
-    int plane = NUM2INT(color_plane);
-    if (color_plane == 0) {
-      Paint_SelectImage(canvas->black_image);
-    } else {
-      Paint_SelectImage(canvas->red_image);
-    }
-
-    int cols_length = RARRAY_LEN(rb_arr);
-    for (int i = 0; i < cols_length; i++) {
-        VALUE cols_arr = rb_ary_entry(rb_arr, i);
-        VALUE rows_length = RARRAY_LEN(cols_arr);
-        for(int i2 = 0; i2 < rows_length; i2++) {
-            VALUE rb_color = rb_ary_entry(cols_arr, i2);
-            int color = NUM2INT(rb_color) > 0 ? BLACK : WHITE;
-            Paint_SetPixel(x + i, y + i2, color);
-        }
-    }
-    return Qnil;
 }
 
 void Init_epaperify() {
@@ -656,12 +490,17 @@ void Init_epaperify() {
     rb_define_method(canvasKlass, "measure", string_metrics, 1);
     rb_define_method(canvasKlass, "text_options", text_options, 1);
     rb_define_method(canvasKlass, "render_pixels", render_pixels, 4);
+    rb_define_method(canvasKlass, "render_font_buffer", render_font_buffer, 4);
 
     //Image Buffer
     VALUE imageBuffer = rb_define_class_under(mod, "ImageBuffer", rb_cObject);
     rb_define_alloc_func(imageBuffer, allocate_image_buffer);
     rb_define_method(imageBuffer, "initialize", initialize_image_buffer, 1);
     rb_define_method(imageBuffer, "read_bmp", read_bitmap, 3);
+
+    VALUE fontRender = rb_define_class_under(mod, "FontRender", rb_cObject);
+    rb_define_alloc_func(fontRender, allocate_font_render);
+    rb_define_method(fontRender, "to_a", render_font_to_a, 0);
 
     VALUE fontKlass = rb_define_class_under(mod, "Font", rb_cObject);
     rb_define_alloc_func(fontKlass, allocate_font);

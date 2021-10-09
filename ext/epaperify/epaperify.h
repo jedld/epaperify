@@ -52,6 +52,13 @@ typedef struct epaper_font {
     SFT sft;
 } efont;
 
+typedef struct epaper_font_render {
+    efont *font;
+    unsigned int width;
+    unsigned int height;
+    char *render_buffer;
+} efont_render;
+
 sFONT *size_to_font(UWORD font_size);
 
 #endif

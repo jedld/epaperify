@@ -9,7 +9,11 @@ module Epaperify
   DISPLAY_EPD_5IN83_V2 = 2
 
   class Error < StandardError; end
-  # Your code goes here...
+  class PaperCanvas
+    def initialize(model, rotation); end
+    def draw_string(xval, yval, message);end
+    def render_font_buffer(xcoord, ycoord, font_buffer, color_plane); end
+  end
 end
 
 require "epaperify/epaperify"
