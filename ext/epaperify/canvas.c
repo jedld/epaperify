@@ -138,7 +138,7 @@ VALUE render_font_buffer(VALUE self, VALUE xcoord, VALUE ycoord, VALUE rb_font_b
 
     for (int i = 0; i < render_buffer->height; i++) {
         for(int i2 = 0; i2 < render_buffer->width; i2++) {
-            int color = render_buffer->render_buffer[i*render_buffer->width + i2] > 0 ? BLACK : WHITE;
+            int color = render_buffer->render_buffer[i*render_buffer->width + i2] > 100 ? BLACK : WHITE;
             Paint_SetPixel(x + i2, y + i, color);
         }
     }
