@@ -236,13 +236,14 @@ VALUE get_ycursor(VALUE self) {
 VALUE get_height(VALUE self) {
     ecanvas *canvas;
     Data_Get_Struct(self, ecanvas, canvas);
-    return INT2NUM(canvas->height);
+    return INT2NUM(Paint.Height);
 }
 
 VALUE get_width(VALUE self) {
     ecanvas *canvas;
     Data_Get_Struct(self, ecanvas, canvas);
-    return INT2NUM(canvas->width);
+
+    return INT2NUM(Paint.Width);
 }
 
 VALUE get_font_size(VALUE self) {
