@@ -33,6 +33,7 @@ Gem::Specification.new do |spec|
   spec.extensions = %w[ext/epaperify/extconf.rb]
   # Uncomment to register a new dependency of your gem
   spec.add_development_dependency "rake-compiler"
+  spec.add_development_dependency "pry-byebug"
 
   # For more information and examples about making a new gem, checkout our
   # guide at: https://bundler.io/guides/creating_gem.html

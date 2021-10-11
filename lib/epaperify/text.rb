@@ -3,6 +3,11 @@ module Epaperify
     def initialize(font)
       @font = font
       @font_cache = {}
+      @line_padding = 5
+    end
+
+    def line_padding(padding)
+      @line_padding = padding
     end
 
     def render_string(canvas, str)
@@ -14,10 +19,12 @@ module Epaperify
         end
       end
 
+      y_advance = (@font.ascender + @font.descender + @font.linegap + @line_padding)
+
       str.each_char do |c|
-        if c == '\n'
+        if c == "\n"
           x_point = 0
-          y_point += 2 * (@font.ascender + @font.descender + @font.linegap)
+          y_point += y_advance
         else
           font_render = @font_cache[c.ord]
 
