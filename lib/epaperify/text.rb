@@ -19,7 +19,8 @@ module Epaperify
       y_advance = (@font.ascender + @font.descender + @font.linegap)
 
       x_point = canvas.x_cursor + left_margin
-      y_point = canvas.y_cursor + y_advance
+      y_point = canvas.y_cursor + y_advance + top_margin
+      
       @font_cache[' '.ord] ||= begin
                                  @font.render_font(' '.ord)
                                end
