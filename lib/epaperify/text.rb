@@ -61,14 +61,14 @@ module Epaperify
       str.each_char.with_index do |c, index|
         if c == "\n"
           x_point = left_margin
-          y_point +=  2 * y_advance + @line_padding
+          y_point +=  y_advance + @line_padding
         elsif c == "\t"
           x_point += 4 * space_width 
         else
           if word_boundaries.key?(index) && max_width
             if x_point + word_boundaries.dig(index, :width) > max_width - right_margin
               x_point = left_margin
-              y_point += 2 * y_advance + @line_padding
+              y_point += y_advance + @line_padding
             end
           end
 
