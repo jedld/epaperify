@@ -16,8 +16,10 @@ module Epaperify
       right_margin = options.fetch(:right_margin, 0)
       top_margin = options.fetch(:top_margin, 0)
 
+      y_advance = (@font.ascender + @font.descender + @font.linegap + @line_padding)
+
       x_point = canvas.x_cursor + left_margin
-      y_point = canvas.y_cursor + @font.scale + top_margin
+      y_point = canvas.y_cursor + y_advance
       @font_cache[' '.ord] ||= begin
                                  @font.render_font(' '.ord)
                                end
@@ -54,19 +56,19 @@ module Epaperify
         end
       end
 
-      y_advance = (@font.ascender + @font.descender + @font.linegap + @line_padding)
+      
 
       str.each_char.with_index do |c, index|
         if c == "\n"
           x_point = left_margin
-          y_point += y_advance
+          y_point +=  2 * y_advance
         elsif c == "\t"
           x_point += 4 * space_width 
         else
           if word_boundaries.key?(index) && max_width
             if x_point + word_boundaries.dig(index, :width) > max_width - right_margin
               x_point = left_margin
-              y_point += y_advance
+              y_point += 2 * y_advance
             end
           end
 
