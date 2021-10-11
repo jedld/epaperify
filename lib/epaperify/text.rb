@@ -11,12 +11,13 @@ module Epaperify
     end
 
     def render_string(canvas, str, options = {})
-      x_point = canvas.x_cursor
-      y_point = canvas.y_cursor + @font.scale
-
       max_width = options.fetch(:width, canvas.width)
       left_margin = options.fetch(:left_margin, 0)
       right_margin = options.fetch(:right_margin, 0)
+      top_margin = options.fetch(:top_margin, 0)
+
+      x_point = canvas.x_cursor + left_margin
+      y_point = canvas.y_cursor + @font.scale + top_margin
 
       str.each_char do |c|
         @font_cache[c.ord] ||= begin
@@ -29,7 +30,7 @@ module Epaperify
       current_boundary = nil
 
       str.each_char.with_index do |c, index|
-        if !is_word_char?(c)
+        if is_word_char?(c)
           font_render = @font_cache[c.ord]
           if !inside_word
             current_boundary = {
@@ -68,6 +69,8 @@ module Epaperify
           x_point += font_render.advance_width
         end
       end
+      canvas.x_cursor = x_point
+      canvas.y_cursor = y_point
     end
 
     private
