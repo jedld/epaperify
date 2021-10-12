@@ -56,8 +56,10 @@ module Epaperify
 
     def render(x, y, canvas, options = {}, &block)
       max_width = options.fetch(:width, canvas.width)
+      max_height = options.fetch(:height, canvas.height)
       left_margin = options.fetch(:left_margin, 0)
       right_margin = options.fetch(:right_margin, 0)
+      bottom_margin = options.fetch(:bottom_margin, 0)
       top_margin = options.fetch(:top_margin, 0)
       ln_padding = options.fetch(:line_padding, @line_padding)
       chr_padding = options.fetch(:char_padding, 0)
@@ -102,16 +104,22 @@ module Epaperify
         elsif c == "\t"
           x_point += 4 * @space_width
         else
+          font_render = @font_cache[c.ord]
+
+          #bounds limits check
           if word_boundaries.key?(index) && max_width &&
             (x_point + word_boundaries.dig(index, :width) > max_width - right_margin)
-              x_point = left_margin
+              x_point = x + left_margin
               y_point += y_advance + ln_padding
           elsif (x_point + font_render.advance_width + chr_padding) > (max_width - right_margin)
-            x_point = left_margin
+            x_point = x + left_margin
             y_point +=  y_advance + ln_padding
           end
 
-          font_render = @font_cache[c.ord]
+          if y_point > max_height - bottom_margin
+            x_point = x + left_margin
+            y_point = y + top_margin
+          end
 
           if block_given?
             yield x_point, y_point, font_render
@@ -124,7 +132,7 @@ module Epaperify
          max_y = [max_y, y_point].max
       end
 
-      [x_point, y_point, max_x, max_y]
+      [x_point - left_margin, y_point - top_margin, max_x, max_y]
     end
 
   end
