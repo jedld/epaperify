@@ -33,7 +33,7 @@ module Epaperify
       @string
     end
 
-    def measure(options = {})
+    def measure(canvas, options = {})
       render(0, 0, canvas, options)
     end
 
@@ -60,8 +60,8 @@ module Epaperify
 
       y_advance = (@font.ascender + @font.descender + @font.linegap)
 
-      x_point = + left_margin
-      y_point = options.fetch(:y, canvas.y_cursor) + y_advance + top_margin
+      x_point = x + left_margin
+      y_point = y + y_advance + top_margin
 
       inside_word = false
       word_boundaries = {}
