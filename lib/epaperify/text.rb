@@ -34,14 +34,16 @@ module Epaperify
     end
 
     def measure(canvas, options = {})
-      render(0, 0, canvas, options)
+      y_advance = (@font.ascender + @font.descender + @font.linegap)
+      _, _, max_x, max_y = render(0, 0, canvas, options)
+      [max_x, max_y + y_advance]
     end
 
     def render_string(canvas, options = {})
       x = options.fetch(:x, canvas.x_cursor)
       y = options.fetch(:y, canvas.y_cursor)
 
-      canvas.x_cursor, canvas.y_cursor = render(x, y, canvas, options) do |x_point, y_point, font_render|
+      canvas.x_cursor, canvas.y_cursor, _, _ = render(x, y, canvas, options) do |x_point, y_point, font_render|
         canvas.render_font_buffer(x_point + font_render.leftside_bearing, y_point + font_render.yoffset, font_render, 0)
       end
     end
@@ -57,11 +59,16 @@ module Epaperify
       left_margin = options.fetch(:left_margin, 0)
       right_margin = options.fetch(:right_margin, 0)
       top_margin = options.fetch(:top_margin, 0)
+      ln_padding = options.fetch(:line_padding, @line_padding)
+      chr_padding = options.fetch(:char_padding, 0)
 
       y_advance = (@font.ascender + @font.descender + @font.linegap)
 
       x_point = x + left_margin
       y_point = y + y_advance + top_margin
+
+      max_x = x_point
+      max_y = y_point
 
       inside_word = false
       word_boundaries = {}
@@ -91,15 +98,17 @@ module Epaperify
       @string.each_char.with_index do |c, index|
         if c == "\n"
           x_point = left_margin
-          y_point +=  y_advance + @line_padding
+          y_point +=  y_advance + ln_padding
         elsif c == "\t"
           x_point += 4 * @space_width
         else
-          if word_boundaries.key?(index) && max_width
-            if x_point + word_boundaries.dig(index, :width) > max_width - right_margin
+          if word_boundaries.key?(index) && max_width &&
+            (x_point + word_boundaries.dig(index, :width) > max_width - right_margin)
               x_point = left_margin
-              y_point += y_advance + @line_padding
-            end
+              y_point += y_advance + ln_padding
+          elsif (x_point + font_render.advance_width + chr_padding) > (max_width - right_margin)
+            x_point = left_margin
+            y_point +=  y_advance + ln_padding
           end
 
           font_render = @font_cache[c.ord]
@@ -108,11 +117,14 @@ module Epaperify
             yield x_point, y_point, font_render
           end
 
-          x_point += font_render.advance_width
-        end
+          x_point += font_render.advance_width + chr_padding
+         end
+
+         max_x = [max_x, x_point].max
+         max_y = [max_y, y_point].max
       end
 
-      [x_point, y_point]
+      [x_point, y_point, max_x, max_y]
     end
 
   end
