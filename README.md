@@ -31,6 +31,12 @@ sudo make check
 sudo make install
 ```
 
+Install Ruby Dev libraries
+
+```
+sudo apt install ruby-dev
+```
+
 Add this line to your application's Gemfile:
 
 ```ruby
