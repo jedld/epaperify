@@ -1,12 +1,49 @@
 #include "canvas.h"
 
-VALUE initialize(VALUE self, VALUE model, VALUE rotation) {
+static void EPD_IT8951_Init2(ecanvas *canvas, UWORD VCOM) {
+    IT8951_Dev_Info info = EPD_IT8951_Init(VCOM);
+    canvas->width = info.Panel_W;
+    canvas->height = info.Panel_H;
+
+    IT8951_Canvas_Info *canvas_info = (IT8951_Canvas_Info*)malloc(sizeof(IT8951_Canvas_Info));
+    memset(canvas_info, 0, sizeof(IT8951_Canvas_Info));
+
+    canvas->misc = canvas_info;
+
+    canvas_info->target_memory_addr = info.Memory_Addr_L | (info.Memory_Addr_H << 16);
+    char* LUT_Version = (char*)info.LUT_Version;
+
+    if( strcmp(LUT_Version, "M641") == 0 ){
+        //6inch e-Paper HAT(800,600), 6inch HD e-Paper HAT(1448,1072), 6inch HD touch e-Paper HAT(1448,1072)
+        canvas_info->A2_Mode = 4;
+        canvas_info->Four_Byte_Align = true;
+    }else if(strcmp(LUT_Version, "M841_TFAB512") == 0 ){
+        //Another firmware version for 6inch HD e-Paper HAT(1448,1072), 6inch HD touch e-Paper HAT(1448,1072)
+        canvas_info->A2_Mode = 6;
+        canvas_info->Four_Byte_Align = true;
+    }else if( strcmp(LUT_Version, "M841") == 0 ){
+        //9.7inch e-Paper HAT(1200,825)
+        canvas_info->A2_Mode = 6;
+    }else if( strcmp(LUT_Version, "M841_TFA2812") == 0 ){
+        //7.8inch e-Paper HAT(1872,1404)
+        canvas_info->A2_Mode = 6;
+    }else if( strcmp(LUT_Version, "M841_TFA5210") == 0 ){
+        //10.3inch e-Paper HAT(1872,1404)
+        canvas_info->A2_Mode = 6;
+    }else{
+        //default set to 6 as A2 Mode
+        canvas_info->A2_Mode = 6;
+    }
+}
+
+VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
     ecanvas *canvas;
     Data_Get_Struct(self, ecanvas, canvas);
     printf("allocating canvas");
     DEV_Module_Init();
     int bitsperpixel = 1;
     canvas->rotation = NUM2INT(rotation);
+    UWORD extra_param =  NUM2INT(extra);
 
     // Add new model support here!
     switch(NUM2INT(model)) {
@@ -32,10 +69,19 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation) {
            canvas->bpp = 1;
            canvas->width = EPD_5in83_V2_WIDTH;
            canvas->height = EPD_5in83_V2_HEIGHT;
+        case EPD_IT8951:
+           canvas->interface.init_func2 = &EPD_IT8951_Init2;
+           canvas->interface.sleep = &EPD_IT8951_Sleep;
+           canvas->bpp = 4;
            break;
     }
+    
+    if (canvas->interface.init_func != NULL ) {
+        canvas->interface.init_func();
+    } else {
+        canvas->interface.init_func2(canvas, extra_param);
+    }
 
-    canvas->interface.init_func();
     UWORD Imagesize = ((canvas->width % 8 == 0)? ( canvas->width / 8 ): ( canvas->width / 8 + 1)) * canvas->height;
     if((canvas->black_image = (UBYTE *)malloc(Imagesize)) == NULL) {
         printf("Failed to apply for black memory...\r\n");
@@ -60,6 +106,7 @@ void free_canvas(ecanvas *canvas) {
     printf("canvas free");
     if (canvas->black_image!=NULL) free(canvas->black_image);
     if (canvas->red_image!=NULL) free(canvas->red_image);
+    if (canvas->misc!=NULL) free(canvas->misc);
     free(canvas);
 }
 

@@ -12,29 +12,29 @@ NULLCMD = :
 #### Start of system configuration section. ####
 
 srcdir = .
-topdir = /usr/share/rvm/rubies/ruby-2.5.8/include/ruby-2.5.0
+topdir = /usr/include/ruby-2.5.0
 hdrdir = $(topdir)
-arch_hdrdir = /usr/share/rvm/rubies/ruby-2.5.8/include/ruby-2.5.0/x86_64-linux
+arch_hdrdir = /usr/include/arm-linux-gnueabihf/ruby-2.5.0
 PATH_SEPARATOR = :
 VPATH = $(srcdir):$(arch_hdrdir)/ruby:$(hdrdir)/ruby
-prefix = $(DESTDIR)/usr/share/rvm/rubies/ruby-2.5.8
-rubysitearchprefix = $(rubylibprefix)/$(sitearch)
-rubyarchprefix = $(rubylibprefix)/$(arch)
+prefix = $(DESTDIR)/usr
+rubysitearchprefix = $(sitearchlibdir)/$(RUBY_BASE_NAME)
+rubyarchprefix = $(archlibdir)/$(RUBY_BASE_NAME)
 rubylibprefix = $(libdir)/$(RUBY_BASE_NAME)
 exec_prefix = $(prefix)
-vendorarchhdrdir = $(vendorhdrdir)/$(sitearch)
-sitearchhdrdir = $(sitehdrdir)/$(sitearch)
-rubyarchhdrdir = $(rubyhdrdir)/$(arch)
+vendorarchhdrdir = $(sitearchincludedir)/$(RUBY_VERSION_NAME)/vendor_ruby
+sitearchhdrdir = $(sitearchincludedir)/$(RUBY_VERSION_NAME)/site_ruby
+rubyarchhdrdir = $(archincludedir)/$(RUBY_VERSION_NAME)
 vendorhdrdir = $(rubyhdrdir)/vendor_ruby
 sitehdrdir = $(rubyhdrdir)/site_ruby
 rubyhdrdir = $(includedir)/$(RUBY_VERSION_NAME)
-vendorarchdir = $(vendorlibdir)/$(sitearch)
+vendorarchdir = $(rubysitearchprefix)/vendor_ruby/$(ruby_version)
 vendorlibdir = $(vendordir)/$(ruby_version)
 vendordir = $(rubylibprefix)/vendor_ruby
-sitearchdir = $(sitelibdir)/$(sitearch)
+sitearchdir = $(DESTDIR)/usr/local/lib/arm-linux-gnueabihf/site_ruby
 sitelibdir = $(sitedir)/$(ruby_version)
-sitedir = $(rubylibprefix)/site_ruby
-rubyarchdir = $(rubylibdir)/$(arch)
+sitedir = $(DESTDIR)/usr/local/lib/site_ruby
+rubyarchdir = $(rubyarchprefix)/$(ruby_version)
 rubylibdir = $(rubylibprefix)/$(ruby_version)
 sitearchincludedir = $(includedir)/$(sitearch)
 archincludedir = $(includedir)/$(arch)
@@ -52,8 +52,8 @@ infodir = $(datarootdir)/info
 docdir = $(datarootdir)/doc/$(PACKAGE)
 oldincludedir = $(DESTDIR)/usr/include
 includedir = $(prefix)/include
-runstatedir = $(localstatedir)/run
-localstatedir = $(prefix)/var
+runstatedir = $(DESTDIR)/var/run
+localstatedir = $(DESTDIR)/var
 sharedstatedir = $(prefix)/com
 sysconfdir = $(DESTDIR)/etc
 datadir = $(datarootdir)
@@ -68,8 +68,8 @@ CC = gcc
 CXX = g++
 LIBRUBY = $(LIBRUBY_SO)
 LIBRUBY_A = lib$(RUBY_SO_NAME)-static.a
-LIBRUBYARG_SHARED = -Wl,-rpath,'$${ORIGIN}/../lib' -Wl,-rpath,'$${ORIGIN}/../lib' -l$(RUBY_SO_NAME)
-LIBRUBYARG_STATIC = -Wl,-rpath,'$${ORIGIN}/../lib' -Wl,-rpath,'$${ORIGIN}/../lib' -l$(RUBY_SO_NAME)-static
+LIBRUBYARG_SHARED = -l$(RUBY_SO_NAME)
+LIBRUBYARG_STATIC = -l$(RUBY_SO_NAME)-static
 empty =
 OUTFLAG = -o $(empty)
 COUTFLAG = -o $(empty)
@@ -82,13 +82,13 @@ optflags = -O3
 debugflags = -ggdb3
 warnflags = -Wall -Wextra -Wno-unused-parameter -Wno-parentheses -Wno-long-long -Wno-missing-field-initializers -Wno-tautological-compare -Wno-parentheses-equality -Wno-constant-logical-operand -Wno-self-assign -Wunused-variable -Wimplicit-int -Wpointer-arith -Wwrite-strings -Wdeclaration-after-statement -Wimplicit-function-declaration -Wdeprecated-declarations -Wmisleading-indentation -Wno-packed-bitfield-compat -Wsuggest-attribute=noreturn -Wsuggest-attribute=format -Wimplicit-fallthrough=0 -Wduplicated-cond -Wrestrict
 CCDLFLAGS = -fPIC
-CFLAGS   = $(CCDLFLAGS) $(cflags)  -fPIC -D USE_BCM2835_LIB -D RPI $(ARCH_FLAG)
+CFLAGS   = $(CCDLFLAGS) -g -O2 -fdebug-prefix-map=/build/ruby2.5-Omltnv/ruby2.5-2.5.5=. -fstack-protector-strong -Wformat -Werror=format-security -fPIC -D USE_BCM2835_LIB -D RPI $(ARCH_FLAG)
 INCFLAGS = -I. -I$(arch_hdrdir) -I$(hdrdir)/ruby/backward -I$(hdrdir) -I$(srcdir)
-DEFS     = 
-CPPFLAGS = -DRUBY_EXTCONF_H=\"$(RUBY_EXTCONF_H)\"  $(DEFS) $(cppflags)
-CXXFLAGS = $(CCDLFLAGS) $(cxxflags) $(ARCH_FLAG)
-ldflags  = -L. -fstack-protector -rdynamic -Wl,-export-dynamic
-dldflags = -Wl,--compress-debug-sections=zlib 
+DEFS     = -D_FILE_OFFSET_BITS=64
+CPPFLAGS = -DRUBY_EXTCONF_H=\"$(RUBY_EXTCONF_H)\" -Wdate-time -D_FORTIFY_SOURCE=2 $(DEFS) $(cppflags)
+CXXFLAGS = $(CCDLFLAGS) -g -O2 -fdebug-prefix-map=/build/ruby2.5-Omltnv/ruby2.5-2.5.5=. -fstack-protector-strong -Wformat -Werror=format-security $(ARCH_FLAG)
+ldflags  = -L. -Wl,-z,relro -Wl,-z,now -fstack-protector -rdynamic -Wl,-export-dynamic
+dldflags = -Wl,-z,relro -Wl,-z,now -Wl,--compress-debug-sections=zlib 
 ARCH_FLAG = 
 DLDFLAGS = $(ldflags) $(dldflags) $(ARCH_FLAG)
 LDSHARED = $(CC) -shared
@@ -96,17 +96,17 @@ LDSHAREDXX = $(CXX) -shared
 AR = ar
 EXEEXT = 
 
-RUBY_INSTALL_NAME = $(RUBY_BASE_NAME)
-RUBY_SO_NAME = ruby
+RUBY_INSTALL_NAME = $(RUBY_BASE_NAME)2.5
+RUBY_SO_NAME = ruby-2.5
 RUBYW_INSTALL_NAME = 
 RUBY_VERSION_NAME = $(RUBY_BASE_NAME)-$(ruby_version)
 RUBYW_BASE_NAME = rubyw
 RUBY_BASE_NAME = ruby
 
-arch = x86_64-linux
+arch = arm-linux-gnueabihf
 sitearch = $(arch)
 ruby_version = 2.5.0
-ruby = $(bindir)/$(RUBY_BASE_NAME)
+ruby = $(bindir)/$(RUBY_BASE_NAME)2.5
 RUBY = $(ruby)
 ruby_headers = $(hdrdir)/ruby.h $(hdrdir)/ruby/backward.h $(hdrdir)/ruby/ruby.h $(hdrdir)/ruby/defines.h $(hdrdir)/ruby/missing.h $(hdrdir)/ruby/intern.h $(hdrdir)/ruby/st.h $(hdrdir)/ruby/subst.h $(arch_hdrdir)/ruby/config.h $(RUBY_EXTCONF_H)
 
@@ -114,7 +114,7 @@ RM = rm -f
 RM_RF = $(RUBY) -run -e rm -- -rf
 RMDIRS = rmdir --ignore-fail-on-non-empty -p
 MAKEDIRS = /bin/mkdir -p
-INSTALL = /usr/bin/install
+INSTALL = /usr/bin/install -c
 INSTALL_PROG = $(INSTALL) -m 0755
 INSTALL_DATA = $(INSTALL) -m 644
 COPY = cp
@@ -123,8 +123,8 @@ TOUCH = exit >
 #### End of system configuration section. ####
 
 preload = 
-libpath = . $(libdir)
-LIBPATH =  -L. -L$(libdir) -Wl,-rpath,$(libdir)
+libpath = . $(archlibdir)
+LIBPATH =  -L. -L$(archlibdir)
 DEFFILE = 
 
 CLEANFILES = mkmf.log
@@ -135,11 +135,11 @@ extout =
 extout_prefix = 
 target_prefix = /epaperify
 LOCAL_LIBS = -lbcm2835 -lm -Wl,--unresolved-symbols=ignore-in-object-files
-LIBS = $(LIBRUBYARG_SHARED)  -lpthread -ldl -lcrypt -lm   -lc
-ORIG_SRCS = DEV_Config.c EPD_2in7b_V2.c EPD_5in83_V2.c EPD_5in83b_V2.c GUI_BMPfile.c GUI_Paint.c canvas.c epaperify.c font12.c font12CN.c font16.c font20.c font24.c font24CN.c font8.c schrift.c typography.c
+LIBS = $(LIBRUBYARG_SHARED)  -lpthread -lgmp -ldl -lcrypt -lm   -lc
+ORIG_SRCS = DEV_Config.c EPD_2in7b_V2.c EPD_5in83_V2.c EPD_5in83b_V2.c EPD_IT8951.c GUI_BMPfile.c GUI_Paint.c canvas.c epaperify.c font12.c font12CN.c font16.c font20.c font24.c font24CN.c font8.c schrift.c typography.c
 SRCS = $(ORIG_SRCS) 
-OBJS = DEV_Config.o EPD_2in7b_V2.o EPD_5in83_V2.o EPD_5in83b_V2.o GUI_BMPfile.o GUI_Paint.o canvas.o epaperify.o font12.o font12CN.o font16.o font20.o font24.o font24CN.o font8.o schrift.o typography.o
-HDRS = $(srcdir)/EPD_2in7b_V2.h $(srcdir)/DEV_Config.h $(srcdir)/canvas.h $(srcdir)/epaperify.h $(srcdir)/extconf.h $(srcdir)/fonts.h $(srcdir)/typography.h $(srcdir)/Debug.h $(srcdir)/EPD_5in83b_V2.h $(srcdir)/GUI_Paint.h $(srcdir)/schrift.h $(srcdir)/GUI_BMPfile.h $(srcdir)/EPD_5in83_V2.h
+OBJS = DEV_Config.o EPD_2in7b_V2.o EPD_5in83_V2.o EPD_5in83b_V2.o EPD_IT8951.o GUI_BMPfile.o GUI_Paint.o canvas.o epaperify.o font12.o font12CN.o font16.o font20.o font24.o font24CN.o font8.o schrift.o typography.o
+HDRS = $(srcdir)/EPD_5in83b_V2.h $(srcdir)/typography.h $(srcdir)/DEV_Config.h $(srcdir)/EPD_5in83_V2.h $(srcdir)/Debug.h $(srcdir)/canvas.h $(srcdir)/fonts.h $(srcdir)/extconf.h $(srcdir)/GUI_Paint.h $(srcdir)/epaperify.h $(srcdir)/GUI_BMPfile.h $(srcdir)/schrift.h $(srcdir)/EPD_IT8951.h $(srcdir)/EPD_2in7b_V2.h
 LOCAL_HDRS = 
 TARGET = epaperify
 TARGET_NAME = epaperify

@@ -452,12 +452,11 @@ VALUE read_bitmap_4g(VALUE self, VALUE filename, VALUE xstart, VALUE ystart) {
 }
 
 
-
 void Init_epaperify() {
     VALUE mod = rb_define_module("Epaperify");
     VALUE canvasKlass = rb_define_class_under(mod, "PaperCanvas", rb_cObject);
     rb_define_alloc_func(canvasKlass, allocate);
-    rb_define_method(canvasKlass, "initialize", initialize, 2);
+    rb_define_method(canvasKlass, "initialize", initialize, 3);
     rb_define_method(canvasKlass, "init_paper", init_paper, 0);
     rb_define_method(canvasKlass, "draw_string", draw_string, 3);
     rb_define_method(canvasKlass, "font_size=", font_size, 1);

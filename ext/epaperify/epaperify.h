@@ -5,6 +5,7 @@
 #include "EPD_2in7b_V2.h"
 #include "EPD_5in83b_V2.h"
 #include "EPD_5in83_V2.h"
+#include "EPD_IT8951.h"
 #include "GUI_Paint.h"
 #include "GUI_BMPfile.h"
 #include <time.h>
@@ -15,6 +16,7 @@
 #define EPD_2IN7B_V2 0
 #define EPD_5IN83B_V2 1
 #define EPD_5IN83_V2 2
+#define EPD_IT8951 3
 
 typedef struct epaper_image_buffer {
     UWORD width;
@@ -27,6 +29,7 @@ typedef struct epaper_image_buffer {
 
 typedef struct epaper_model_interface {
    void (*init_func)();
+   void (*init_func2)(void *canvas, UWORD *vcom);
    void (*display)(UBYTE *Image);
    void (*display_rb)(UBYTE *Imageblack, UBYTE *Imagered);
    void (*sleep)(void);
@@ -46,6 +49,7 @@ typedef struct epaper_canvas {
     int rotation;
     epaper_interface interface;
     TEXT_OPTIONS text_options;
+    void *misc;
 } ecanvas;
 
 typedef struct epaper_font {
