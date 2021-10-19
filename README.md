@@ -45,6 +45,7 @@ gem 'epaperify'
 
 And then execute:
 
+    $ gem install bundler
     $ bundle install
 
 Or install it yourself as:
