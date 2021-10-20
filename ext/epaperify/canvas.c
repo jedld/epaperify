@@ -1,6 +1,6 @@
 #include "canvas.h"
 
-static void EPD_IT8951_Init2(ecanvas *canvas, UWORD VCOM) {
+void EPD_IT8951_Init2(ecanvas *canvas, UWORD VCOM) {
     IT8951_Dev_Info info = EPD_IT8951_Init(VCOM);
     canvas->width = info.Panel_W;
     canvas->height = info.Panel_H;
