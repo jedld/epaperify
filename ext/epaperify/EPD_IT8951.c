@@ -924,13 +924,13 @@ void EPD_IT8951_8bp_Refresh(UBYTE *Frame_Buf, UWORD X, UWORD Y, UWORD W, UWORD H
 
 UBYTE DEV_Module_Init_IT8951(void)
 {
-    Debug("/***********************************/ \r\n");
+    printf("/***********************************/ \r\n");
 
 	if(!bcm2835_init()) {
-		Debug("bcm2835 init failed  !!! \r\n");
+		printf("bcm2835 init failed  !!! \r\n");
 		return 1;
 	} else {
-		Debug("bcm2835 init IT8951 success !!! \r\n");
+		printf("bcm2835 init IT8951 success !!! \r\n");
 	}
 
 	bcm2835_spi_begin();                                         //Start spi interface, set spi pin for the reuse function
@@ -944,6 +944,6 @@ UBYTE DEV_Module_Init_IT8951(void)
 	//GPIO Config
 	DEV_GPIO_Init();
 
-    Debug("/***********************************/ \r\n");
+    printf("/***********************************/ \r\n");
 	return 0;
 }
