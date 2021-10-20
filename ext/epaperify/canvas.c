@@ -90,6 +90,9 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            canvas->interface.clear = &Paint_Clear2;
            canvas->bpp = 4;
            break;
+        default:
+           prinft("unknown !!! %d", NUM2INT(model));
+           return Qnil;
     }
     
     if (canvas->interface.init_func != NULL ) {
