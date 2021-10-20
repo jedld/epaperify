@@ -91,7 +91,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            canvas->bpp = 4;
            break;
         default:
-           prinft("unknown !!! %d", NUM2INT(model));
+           printf("unknown !!! %d", NUM2INT(model));
            return Qnil;
     }
     
