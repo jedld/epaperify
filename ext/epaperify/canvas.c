@@ -51,6 +51,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            canvas->interface.init_func = &EPD_2IN7B_V2_Init;
            canvas->interface.display_rb = &EPD_2IN7B_V2_Display;
            canvas->interface.sleep = &EPD_2IN7B_V2_Sleep;
+           canvas->interface.new_image = &Paint_NewImage;
            canvas->bpp = 1;
            canvas->width = EPD_2IN7B_V2_WIDTH;
            canvas->height = EPD_2IN7B_V2_HEIGHT;
@@ -59,6 +60,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            canvas->interface.init_func = &EPD_5IN83B_V2_Init;
            canvas->interface.display_rb = &EPD_5IN83B_V2_Display;
            canvas->interface.sleep = &EPD_5IN83B_V2_Sleep;
+           canvas->interface.new_image = &Paint_NewImage;
            canvas->width = EPD_5IN83B_V2_WIDTH;
            canvas->height = EPD_5IN83B_V2_HEIGHT;
            break;
@@ -66,12 +68,14 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            canvas->interface.init_func = &EPD_5in83_V2_Init;
            canvas->interface.display = &EPD_5in83_V2_Display;
            canvas->interface.sleep = &EPD_5in83_V2_Sleep;
+           canvas->interface.new_image = &Paint_NewImage;
            canvas->bpp = 1;
            canvas->width = EPD_5in83_V2_WIDTH;
            canvas->height = EPD_5in83_V2_HEIGHT;
         case EPD_IT8951:
            canvas->interface.init_func2 = &EPD_IT8951_Init2;
            canvas->interface.sleep = &EPD_IT8951_Sleep;
+           canvas->interface.new_image = &Paint_NewImage2;
            canvas->bpp = 4;
            break;
     }
@@ -93,8 +97,8 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
         return -1;
     }
 
-    Paint_NewImage(canvas->black_image, canvas->width , canvas->height, canvas->rotation, WHITE);
-    Paint_NewImage(canvas->red_image, canvas->width, canvas->height, canvas->rotation, WHITE);
+    canvas->interface.new_image(canvas->black_image, canvas->width , canvas->height, canvas->rotation, WHITE);
+    canvas->interface.new_image(canvas->red_image, canvas->width, canvas->height, canvas->rotation, WHITE);
     Paint_SelectImage(canvas->black_image);
     Paint_Clear(WHITE);
     Paint_SelectImage(canvas->red_image);

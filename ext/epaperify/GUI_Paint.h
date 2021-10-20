@@ -89,8 +89,12 @@ typedef struct {
     UWORD WidthByte;
     UWORD HeightByte;
     UWORD Scale;
+    UWORD BitsPerPixel;
+    UWORD GrayScale;
 } PAINT;
+
 extern PAINT Paint;
+
 
 /**
  * Display rotate
@@ -204,6 +208,7 @@ typedef struct word_boundary {
 
 //init and Clear
 void Paint_NewImage(UBYTE *image, UWORD Width, UWORD Height, UWORD Rotate, UWORD Color);
+void Paint_NewImage2(UBYTE *image, UWORD Width, UWORD Height, UWORD Rotate, UWORD Color);
 void Paint_SelectImage(UBYTE *image);
 void Paint_SetRotate(UWORD Rotate);
 void Paint_SetMirroring(UBYTE mirror);

@@ -119,6 +119,31 @@ void Paint_NewImage(UBYTE *image, UWORD Width, UWORD Height, UWORD Rotate, UWORD
     }
 }
 
+void Paint_NewImage2(UBYTE *image, UWORD Width, UWORD Height, UWORD Rotate, UWORD Color)
+{
+    Paint.Image = NULL;
+    Paint.Image = image;
+
+    Paint.WidthMemory = Width;
+    Paint.HeightMemory = Height;
+    Paint.Color = Color;
+    Paint.BitsPerPixel = 8;
+    Paint.GrayScale = pow(2, Paint.BitsPerPixel);
+    Paint.WidthByte = Width;
+    Paint.HeightByte = Height;
+   
+    Paint.Rotate = Rotate;
+    Paint.Mirror = MIRROR_NONE;
+    
+    if(Rotate == ROTATE_0 || Rotate == ROTATE_180) {
+        Paint.Width = Width;
+        Paint.Height = Height;
+    } else {
+        Paint.Width = Height;
+        Paint.Height = Width;
+    }
+}
+
 /******************************************************************************
 function: Select Image
 parameter:
