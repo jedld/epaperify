@@ -2,6 +2,7 @@
 
 void EPD_IT8951_Init2(ecanvas *canvas, UWORD VCOM) {
     IT8951_Dev_Info info = EPD_IT8951_Init(VCOM);
+    printf("w %d h %d", info.Panel_W, info.Panel_H);
     canvas->width = info.Panel_W;
     canvas->height = info.Panel_H;
 
@@ -100,7 +101,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
     }
     
     canvas->interface.bcm2835_init();
-    
+
     if (canvas->interface.init_func != NULL ) {
         printf("calling init func");
         canvas->interface.init_func();
