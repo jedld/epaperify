@@ -920,6 +920,13 @@ void EPD_IT8951_8bp_Refresh(UBYTE *Frame_Buf, UWORD X, UWORD Y, UWORD W, UWORD H
     }
 }
 
+static void DEV_GPIO_Init_IT8951(void)
+{
+	DEV_GPIO_Mode(EPD_RST_PIN, BCM2835_GPIO_FSEL_OUTP);
+	DEV_GPIO_Mode(EPD_CS_PIN, BCM2835_GPIO_FSEL_OUTP);
+	DEV_GPIO_Mode(EPD_BUSY_PIN, BCM2835_GPIO_FSEL_INPT);
+	DEV_Digital_Write(EPD_CS_PIN, HIGH);
+}
 
 
 UBYTE DEV_Module_Init_IT8951(void)
@@ -942,7 +949,7 @@ UBYTE DEV_Module_Init_IT8951(void)
 	/*http://www.airspayce.com/mikem/bcm2835/group__constants.html#gaf2e0ca069b8caef24602a02e8a00884e*/
 
 	//GPIO Config
-	DEV_GPIO_Init();
+	DEV_GPIO_Init_IT8951();
 
     printf("/***********************************/ \r\n");
 	return 0;

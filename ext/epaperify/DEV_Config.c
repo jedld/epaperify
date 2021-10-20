@@ -289,6 +289,10 @@ void DEV_GPIO_Init(void)
 
 	DEV_Digital_Write(EPD_CS_PIN, 1);
 }
+
+
+**/
+
 /******************************************************************************
 function:	Module Initialize, the library and initialize the pins, SPI protocol
 parameter:
