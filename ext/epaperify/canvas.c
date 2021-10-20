@@ -52,6 +52,8 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            canvas->interface.display_rb = &EPD_2IN7B_V2_Display;
            canvas->interface.sleep = &EPD_2IN7B_V2_Sleep;
            canvas->interface.new_image = &Paint_NewImage;
+           canvas->interface.set_pixel = &Paint_SetPixel;
+           canvas->interface.clear = &Paint_Clear;
            canvas->bpp = 1;
            canvas->width = EPD_2IN7B_V2_WIDTH;
            canvas->height = EPD_2IN7B_V2_HEIGHT;
@@ -61,6 +63,8 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            canvas->interface.display_rb = &EPD_5IN83B_V2_Display;
            canvas->interface.sleep = &EPD_5IN83B_V2_Sleep;
            canvas->interface.new_image = &Paint_NewImage;
+           canvas->interface.set_pixel = &Paint_SetPixel;
+           canvas->interface.clear = &Paint_Clear;
            canvas->width = EPD_5IN83B_V2_WIDTH;
            canvas->height = EPD_5IN83B_V2_HEIGHT;
            break;
@@ -69,13 +73,18 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            canvas->interface.display = &EPD_5in83_V2_Display;
            canvas->interface.sleep = &EPD_5in83_V2_Sleep;
            canvas->interface.new_image = &Paint_NewImage;
+           canvas->interface.set_pixel = &Paint_SetPixel;
+           canvas->interface.clear = &Paint_Clear;
            canvas->bpp = 1;
            canvas->width = EPD_5in83_V2_WIDTH;
            canvas->height = EPD_5in83_V2_HEIGHT;
+           break;
         case EPD_IT8951:
            canvas->interface.init_func2 = &EPD_IT8951_Init2;
            canvas->interface.sleep = &EPD_IT8951_Sleep;
            canvas->interface.new_image = &Paint_NewImage2;
+           canvas->interface.set_pixel = &Paint_SetPixel2;
+           canvas->interface.clear = &Paint_Clear2;
            canvas->bpp = 4;
            break;
     }
@@ -86,7 +95,13 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
         canvas->interface.init_func2(canvas, extra_param);
     }
 
-    UWORD Imagesize = ((canvas->width % 8 == 0)? ( canvas->width / 8 ): ( canvas->width / 8 + 1)) * canvas->height;
+    UWORD Imagesize = 0;
+    if (canvas->bpp = 1) {
+        Imagesize = ((canvas->width % 8 == 0)? ( canvas->width / 8 ): ( canvas->width / 8 + 1)) * canvas->height;
+    } else {
+        Imagesize = ((canvas->width * canvas->bpp % 8 == 0)? (canvas->width * canvas->bpp / 8 ): (canvas->width * canvas->bpp / 8 + 1)) * canvas->height;
+    }
+    
     if((canvas->black_image = (UBYTE *)malloc(Imagesize)) == NULL) {
         printf("Failed to apply for black memory...\r\n");
         return -1;
@@ -100,9 +115,9 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
     canvas->interface.new_image(canvas->black_image, canvas->width , canvas->height, canvas->rotation, WHITE);
     canvas->interface.new_image(canvas->red_image, canvas->width, canvas->height, canvas->rotation, WHITE);
     Paint_SelectImage(canvas->black_image);
-    Paint_Clear(WHITE);
+    canvas->interface.clear(WHITE);
     Paint_SelectImage(canvas->red_image);
-    Paint_Clear(WHITE);
+    canvas->interface.clear(WHITE);
     return Qnil;
 }
 
@@ -166,7 +181,7 @@ VALUE render_pixels(VALUE self, VALUE xcoord, VALUE ycoord, VALUE rb_arr, VALUE 
         for(int i2 = 0; i2 < rows_length; i2++) {
             VALUE rb_color = rb_ary_entry(cols_arr, i2);
             int color = NUM2INT(rb_color) > 0 ? BLACK : WHITE;
-            Paint_SetPixel(x + i, y + i2, color);
+            canvas->interface.set_pixel(x + i, y + i2, color);
         }
     }
     return Qnil;
@@ -186,11 +201,17 @@ VALUE render_font_buffer(VALUE self, VALUE xcoord, VALUE ycoord, VALUE rb_font_b
     } else {
       Paint_SelectImage(canvas->red_image);
     }
-
+    UBYTE SixteenColorPattern[16] = {0xFF,0xEE,0xDD,0xCC,0xBB,0xAA,0x99,0x88,0x77,0x66,0x55,0x44,0x33,0x22,0x11,0x00};
     for (int i = 0; i < render_buffer->height; i++) {
         for(int i2 = 0; i2 < render_buffer->width; i2++) {
-            int color = render_buffer->render_buffer[i*render_buffer->width + i2] > 100 ? BLACK : WHITE;
-            Paint_SetPixel(x + i2, y + i, color);
+            int color = 0;
+            if (canvas->bpp == 1) {}
+                color = render_buffer->render_buffer[i*render_buffer->width + i2] > 100 ? BLACK : WHITE;
+            } else {
+                int index = (render_buffer->render_buffer[i*render_buffer->width + i2] % 256) / 16 ;
+                color = SixteenColorPattern[index];
+            }
+            canvas->interface.set_pixel(x + i2, y + i, color);
         }
     }
     return Qnil;

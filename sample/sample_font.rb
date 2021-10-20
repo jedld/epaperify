@@ -2,7 +2,7 @@ require "bundler/setup"
 require "epaperify"
 require 'pry-byebug'
 
-canvas = Epaperify::PaperCanvas.new(Epaperify::DISPLAY_EPD_2IN7B_V2, 270)
+canvas = Epaperify::PaperCanvas.new(Epaperify::Devices::DISPLAY_EPD_2IN7B_V2, 270, 0)
 
 _font = Epaperify::Font.new(12, "FiraGO-Regular.ttf")
 font2 = Epaperify::Font.new(12, "orange juice 2.0.ttf")

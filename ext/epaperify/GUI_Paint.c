@@ -282,6 +282,82 @@ void Paint_SetPixel(UWORD Xpoint, UWORD Ypoint, UWORD Color)
 	}
 }
 
+void Paint_SetPixel2(UWORD Xpoint, UWORD Ypoint, UWORD Color)
+{
+    if(Xpoint > Paint.Width || Ypoint > Paint.Height){
+        //Debug("Exceeding display boundaries\r\n");
+        return;
+    }      
+    UWORD X, Y;
+
+    switch(Paint.Rotate) {
+    case 0:
+        X = Xpoint;
+        Y = Ypoint;  
+        break;
+    case 90:
+        X = Paint.WidthMemory - Ypoint - 1;
+        Y = Xpoint;
+        break;
+    case 180:
+        X = Paint.WidthMemory - Xpoint - 1;
+        Y = Paint.HeightMemory - Ypoint - 1;
+        break;
+    case 270:
+        X = Ypoint;
+        Y = Paint.HeightMemory - Xpoint - 1;
+        break;
+    default:
+        return;
+    }
+    
+    switch(Paint.Mirror) {
+    case MIRROR_NONE:
+        break;
+    case MIRROR_HORIZONTAL:
+        X = Paint.WidthMemory - X - 1;
+        break;
+    case MIRROR_VERTICAL:
+        Y = Paint.HeightMemory - Y - 1;
+        break;
+    case MIRROR_ORIGIN:
+        X = Paint.WidthMemory - X - 1;
+        Y = Paint.HeightMemory - Y - 1;
+        break;
+    default:
+        return;
+    }
+
+    if(X > Paint.WidthMemory || Y > Paint.HeightMemory){
+        Debug("Exceeding display boundaries\r\n");
+        return;
+    }
+
+    UDOUBLE Addr = X * (Paint.BitsPerPixel) / 8 + Y * Paint.WidthByte;
+
+    switch( Paint.BitsPerPixel ){
+        case 8:{
+            Paint.Image[Addr] = Color & 0xF0;
+            break;
+        }
+        case 4:{
+            Paint.Image[Addr] &= ~( (0xF0) >> (7 - (X*4+3)%8 ) );
+            Paint.Image[Addr] |= (Color & 0xF0) >> (7 - (X*4+3)%8 );
+            break;
+        }
+        case 2:{
+            Paint.Image[Addr] &= ~( (0xC0) >> (7 - (X*2+1)%8 ) );
+            Paint.Image[Addr] |= (Color & 0xC0) >> (7 - (X*2+1)%8 );
+            break;
+        }
+        case 1:{
+            Paint.Image[Addr] &= ~( (0x80) >> (7 - X%8) );
+            Paint.Image[Addr] |= (Color & 0x80) >> (7 - X%8);
+            break;
+        }
+    }
+}
+
 /******************************************************************************
 function: Clear the color of the picture
 parameter:
@@ -305,6 +381,12 @@ void Paint_Clear(UWORD Color)
 		}
 	}
 
+}
+
+void Paint_Clear2(UWORD Color)
+{
+    UDOUBLE ImageSize = Paint.WidthByte * Paint.HeightByte;
+    memset(Paint.Image, Color,  ImageSize);
 }
 
 /******************************************************************************
