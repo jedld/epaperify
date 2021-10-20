@@ -352,10 +352,10 @@ static void EPD_IT8951_GetSystemInfo(void* Buf)
     EPD_IT8951_ReadMultiData((UWORD*)Buf, sizeof(IT8951_Dev_Info)/2);
 
     Dev_Info = (IT8951_Dev_Info*)Buf;
-	Debug("Panel(W,H) = (%d,%d)\r\n",Dev_Info->Panel_W, Dev_Info->Panel_H );
-	Debug("Memory Address = %X\r\n",Dev_Info->Memory_Addr_L | (Dev_Info->Memory_Addr_H << 16));
-	Debug("FW Version = %s\r\n", (UBYTE*)Dev_Info->FW_Version);
-	Debug("LUT Version = %s\r\n", (UBYTE*)Dev_Info->LUT_Version);
+	printf("Panel(W,H) = (%d,%d)\r\n",Dev_Info->Panel_W, Dev_Info->Panel_H );
+	printf("Memory Address = %X\r\n",Dev_Info->Memory_Addr_L | (Dev_Info->Memory_Addr_H << 16));
+	printf("FW Version = %s\r\n", (UBYTE*)Dev_Info->FW_Version);
+	printf("LUT Version = %s\r\n", (UBYTE*)Dev_Info->LUT_Version);
 }
 
 
@@ -682,7 +682,7 @@ IT8951_Dev_Info EPD_IT8951_Init(UWORD VCOM)
     if(VCOM != EPD_IT8951_GetVCOM())
     {
         EPD_IT8951_SetVCOM(VCOM);
-        Debug("VCOM = -%.02fV\n",(float)EPD_IT8951_GetVCOM()/1000);
+        printf("VCOM = -%.02fV\n",(float)EPD_IT8951_GetVCOM()/1000);
     }
     return Dev_Info;
 }
@@ -927,7 +927,6 @@ static void DEV_GPIO_Init_IT8951(void)
 	DEV_GPIO_Mode(EPD_BUSY_PIN, BCM2835_GPIO_FSEL_INPT);
 	DEV_Digital_Write(EPD_CS_PIN, HIGH);
 }
-
 
 UBYTE DEV_Module_Init_IT8951(void)
 {
