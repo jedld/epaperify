@@ -202,3 +202,4 @@ void EPD_5IN83B_V2_Sleep(void)
 	EPD_5IN83B_V2_SendCommand(0X07);  	//deep sleep
 	EPD_5IN83B_V2_SendData(0xA5);
 }
+

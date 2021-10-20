@@ -42,7 +42,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
     ecanvas *canvas;
     Data_Get_Struct(self, ecanvas, canvas);
     printf("allocating canvas");
-    DEV_Module_Init();
+
     int bitsperpixel = 1;
     canvas->rotation = NUM2INT(rotation);
     UWORD extra_param =  NUM2INT(extra);
@@ -50,6 +50,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
     // Add new model support here!
     switch(NUM2INT(model)) {
         case EPD_2IN7B_V2:
+           canvas->interface.bcm2835_init = &DEV_Module_Init;
            canvas->interface.init_func = &EPD_2IN7B_V2_Init;
            canvas->interface.display_rb = &EPD_2IN7B_V2_Display;
            canvas->interface.sleep = &EPD_2IN7B_V2_Sleep;
@@ -61,6 +62,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            canvas->height = EPD_2IN7B_V2_HEIGHT;
            break;
         case EPD_5IN83B_V2:
+           canvas->interface.bcm2835_init = &DEV_Module_Init;
            canvas->interface.init_func = &EPD_5IN83B_V2_Init;
            canvas->interface.display_rb = &EPD_5IN83B_V2_Display;
            canvas->interface.sleep = &EPD_5IN83B_V2_Sleep;
@@ -71,6 +73,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            canvas->height = EPD_5IN83B_V2_HEIGHT;
            break;
         case EPD_5IN83_V2:
+           canvas->interface.bcm2835_init = &DEV_Module_Init;
            canvas->interface.init_func = &EPD_5in83_V2_Init;
            canvas->interface.display = &EPD_5in83_V2_Display;
            canvas->interface.sleep = &EPD_5in83_V2_Sleep;
@@ -82,6 +85,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            canvas->height = EPD_5in83_V2_HEIGHT;
            break;
         case EPD_IT8951:
+           canvas->interface.bcm2835_init = &DEV_Module_Init_IT8951;
            canvas->interface.display2 = &EPD_IT8951_4bp_Refresh;
            canvas->interface.init_func2 = &EPD_IT8951_Init2;
            canvas->interface.sleep = &EPD_IT8951_Sleep;
@@ -94,6 +98,8 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            printf("unknown !!! %d", NUM2INT(model));
            return Qnil;
     }
+    
+    canvas->interface.bcm2835_init();
     
     if (canvas->interface.init_func != NULL ) {
         printf("calling init func");

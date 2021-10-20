@@ -919,3 +919,31 @@ void EPD_IT8951_8bp_Refresh(UBYTE *Frame_Buf, UWORD X, UWORD Y, UWORD W, UWORD H
         EPD_IT8951_Display_AreaBuf(X, Y, W, H, GC16_Mode, Target_Memory_Addr);
     }
 }
+
+
+
+UBYTE DEV_Module_Init_IT8951(void)
+{
+    Debug("/***********************************/ \r\n");
+
+	if(!bcm2835_init()) {
+		Debug("bcm2835 init failed  !!! \r\n");
+		return 1;
+	} else {
+		Debug("bcm2835 init IT8951 success !!! \r\n");
+	}
+
+	bcm2835_spi_begin();                                         //Start spi interface, set spi pin for the reuse function
+	bcm2835_spi_setBitOrder(BCM2835_SPI_BIT_ORDER_MSBFIRST);     //High first transmission
+	bcm2835_spi_setDataMode(BCM2835_SPI_MODE0);                  //spi mode 0
+	//bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_16);   //For RPi3/3B/3B+
+	bcm2835_spi_setClockDivider(BCM2835_SPI_CLOCK_DIVIDER_32);   //For RPi 4
+	/* SPI clock reference link：*/
+	/*http://www.airspayce.com/mikem/bcm2835/group__constants.html#gaf2e0ca069b8caef24602a02e8a00884e*/
+
+	//GPIO Config
+	DEV_GPIO_Init();
+
+    Debug("/***********************************/ \r\n");
+	return 0;
+}

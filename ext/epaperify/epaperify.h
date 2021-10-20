@@ -28,6 +28,7 @@ typedef struct epaper_image_buffer {
 } EPAPER_IMAGE_BUFFER;
 
 typedef struct epaper_model_interface {
+   void (*bcm2835_init)();
    void (*init_func)();
    void (*init_func2)(void *canvas, UWORD *vcom);
    void (*display)(UBYTE *Image);
