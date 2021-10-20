@@ -96,8 +96,10 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
     }
     
     if (canvas->interface.init_func != NULL ) {
+        printf("calling init func");
         canvas->interface.init_func();
     } else {
+        printf("calling init func 2");
         canvas->interface.init_func2(canvas, extra_param);
     }
 
