@@ -107,6 +107,7 @@ void DEV_Delay_ms(UDOUBLE xms);
 
 UBYTE DEV_Module_Init(void);
 void DEV_Module_Exit(void);
+UBYTE DEV_SPI_ReadByte();
 
 
 #endif

@@ -109,6 +109,18 @@ void DEV_SPI_WriteByte(uint8_t Value)
 #endif
 }
 
+/******************************************************************************
+function:	SPI Read
+parameter:
+Info:
+******************************************************************************/
+UBYTE DEV_SPI_ReadByte()
+{
+	UBYTE Read_Value = 0x00;
+	Read_Value = bcm2835_spi_transfer(0x00);
+	return Read_Value;
+}
+
 void DEV_SPI_Write_nByte(uint8_t *pData, uint32_t Len)
 {
 #ifdef RPI
