@@ -80,6 +80,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            canvas->height = EPD_5in83_V2_HEIGHT;
            break;
         case EPD_IT8951:
+           canvas->interface.display2 = &EPD_IT8951_4bp_Refresh;
            canvas->interface.init_func2 = &EPD_IT8951_Init2;
            canvas->interface.sleep = &EPD_IT8951_Sleep;
            canvas->interface.new_image = &Paint_NewImage2;

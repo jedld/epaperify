@@ -32,6 +32,7 @@ typedef struct epaper_model_interface {
    void (*init_func2)(void *canvas, UWORD *vcom);
    void (*display)(UBYTE *Image);
    void (*display_rb)(UBYTE *Imageblack, UBYTE *Imagered);
+   void (*display2)(UBYTE* Frame_Buf, UWORD X, UWORD Y, UWORD W, UWORD H, bool Hold, UDOUBLE Target_Memory_Addr, bool Packed_Write);
    void (*new_image)(UBYTE *image, UWORD Width, UWORD Height, UWORD Rotate, UWORD Color);
    void (*set_pixel)(UWORD Xpoint, UWORD Ypoint, UWORD Color);
    void (*clear)(UWORD color);

@@ -122,6 +122,10 @@ VALUE draw_bitmap(VALUE self, VALUE image_buffer, VALUE startx, VALUE starty) {
 VALUE show(VALUE self) {
     ecanvas *canvas;
     Data_Get_Struct(self, ecanvas, canvas);
+    if (canvas->interface.display2 != NULL) {
+        IT8951_Canvas_Info *info = (IT8951_Canvas_Info*)canvas->misc;
+        canvas->interface.display2(canvas->black_image, 0, 0, Paint.Width, Paint.Height, false, info->target_memory_addr, false);
+    } else
     if (canvas->interface.display != NULL) {
         canvas->interface.display(canvas->black_image);
     } else {
