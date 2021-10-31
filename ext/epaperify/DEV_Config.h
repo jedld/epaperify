@@ -67,7 +67,7 @@
 #define EPD_RST_PIN  17
 #define EPD_CS_PIN   8
 #define EPD_BUSY_PIN 24
-
+#define EPD_DC_PIN   25
 
 
 /**
@@ -88,7 +88,7 @@ UBYTE DEV_SPI_ReadByte();
 
 void DEV_Delay_ms(UDOUBLE xms);
 void DEV_Delay_us(UDOUBLE xus);
-
+void DEV_GPIO_Mode(UWORD Pin, UWORD Mode);
 UBYTE DEV_Module_Init(void);
 void DEV_Module_Exit(void);
 

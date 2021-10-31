@@ -104,7 +104,7 @@ void DEV_Delay_us(UDOUBLE xus)
 /**
  * GPIO Mode
 **/
-static void DEV_GPIO_Mode(UWORD Pin, UWORD Mode)
+void DEV_GPIO_Mode(UWORD Pin, UWORD Mode)
 {
 	if(Mode == 0 || Mode == BCM2835_GPIO_FSEL_INPT) {
 		bcm2835_gpio_fsel(Pin, BCM2835_GPIO_FSEL_INPT);
