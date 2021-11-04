@@ -131,6 +131,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
     canvas->interface.new_image(canvas->black_image, canvas->width , canvas->height, canvas->rotation, WHITE);
     canvas->interface.new_image(canvas->red_image, canvas->width, canvas->height, canvas->rotation, WHITE);
     Paint_SelectImage(canvas->black_image);
+    printf("clearing.\n");
     canvas->interface.clear(WHITE);
     // Paint_SelectImage(canvas->red_image);
     // canvas->interface.clear(WHITE);
