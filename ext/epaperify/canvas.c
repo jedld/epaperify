@@ -37,6 +37,7 @@ void EPD_IT8951_Init2(ecanvas *canvas, UWORD VCOM) {
     }
     printf("version: %s\n", LUT_Version);
     EPD_IT8951_Clear_Refresh(info, canvas_info->target_memory_addr, 0);
+
 }
 
 VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
@@ -126,13 +127,14 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
         printf("Failed to apply for red memory...\r\n");
         return -1;
     }
-
+    printf("allocating new image\n");
     canvas->interface.new_image(canvas->black_image, canvas->width , canvas->height, canvas->rotation, WHITE);
     canvas->interface.new_image(canvas->red_image, canvas->width, canvas->height, canvas->rotation, WHITE);
     Paint_SelectImage(canvas->black_image);
     canvas->interface.clear(WHITE);
-    Paint_SelectImage(canvas->red_image);
-    canvas->interface.clear(WHITE);
+    // Paint_SelectImage(canvas->red_image);
+    // canvas->interface.clear(WHITE);
+    printf("done.\n");
     return Qnil;
 }
 
