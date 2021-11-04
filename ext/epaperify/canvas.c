@@ -112,7 +112,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
     }
 
     UWORD Imagesize = 0;
-    if (canvas->bpp = 1) {
+    if (canvas->bpp == 1) {
         Imagesize = ((canvas->width % 8 == 0)? ( canvas->width / 8 ): ( canvas->width / 8 + 1)) * canvas->height;
     } else {
         Imagesize = canvas->width * canvas->height;
