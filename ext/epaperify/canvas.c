@@ -94,7 +94,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            canvas->interface.new_image = &Paint_NewImage2;
            canvas->interface.set_pixel = &Paint_SetPixel2;
            canvas->interface.clear = &Paint_Clear2;
-           canvas->bpp = 4;
+           canvas->bpp = 8;
            break;
         default:
            printf("unknown !!! %d", NUM2INT(model));
