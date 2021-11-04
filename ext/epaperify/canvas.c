@@ -227,8 +227,7 @@ VALUE render_font_buffer(VALUE self, VALUE xcoord, VALUE ycoord, VALUE rb_font_b
             if (canvas->bpp == 1) {
                 color = render_buffer->render_buffer[i*render_buffer->width + i2] > 100 ? BLACK : WHITE;
             } else {
-                int index = (render_buffer->render_buffer[i*render_buffer->width + i2] % 256) / 16 ;
-                color = SixteenColorPattern[index];
+                color = (render_buffer->render_buffer[i*render_buffer->width + i2] % 256) ;
             }
             canvas->interface.set_pixel(x + i2, y + i, color);
         }
