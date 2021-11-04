@@ -2,7 +2,7 @@
 
 void EPD_IT8951_Init2(ecanvas *canvas, UWORD VCOM) {
     IT8951_Dev_Info info = EPD_IT8951_Init(VCOM);
-    printf("w %d h %d", info.Panel_W, info.Panel_H);
+    printf("w %d h %d\n", info.Panel_W, info.Panel_H);
     canvas->width = info.Panel_W;
     canvas->height = info.Panel_H;
 
@@ -35,7 +35,7 @@ void EPD_IT8951_Init2(ecanvas *canvas, UWORD VCOM) {
         //default set to 6 as A2 Mode
         canvas_info->A2_Mode = 6;
     }
-    printf("version: %s", LUT_Version);
+    printf("version: %s\n", LUT_Version);
     EPD_IT8951_Clear_Refresh(info, canvas_info->target_memory_addr, 0);
 }
 
