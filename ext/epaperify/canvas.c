@@ -111,7 +111,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
         canvas->interface.init_func2(canvas, extra_param);
     }
 
-    UWORD Imagesize = 0;
+    UDOUBLE Imagesize = 0;
     printf("bpp %d", canvas->bpp);
     if (canvas->bpp == 1) {
         Imagesize = ((canvas->width % 8 == 0)? ( canvas->width / 8 ): ( canvas->width / 8 + 1)) * canvas->height;
