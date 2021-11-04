@@ -335,27 +335,7 @@ void Paint_SetPixel2(UWORD Xpoint, UWORD Ypoint, UWORD Color)
 
     UDOUBLE Addr = X * (Paint.BitsPerPixel) / 8 + Y * Paint.WidthByte;
 
-    switch( Paint.BitsPerPixel ){
-        case 8:{
-            Paint.Image[Addr] = Color & 0xF0;
-            break;
-        }
-        case 4:{
-            Paint.Image[Addr] &= ~( (0xF0) >> (7 - (X*4+3)%8 ) );
-            Paint.Image[Addr] |= (Color & 0xF0) >> (7 - (X*4+3)%8 );
-            break;
-        }
-        case 2:{
-            Paint.Image[Addr] &= ~( (0xC0) >> (7 - (X*2+1)%8 ) );
-            Paint.Image[Addr] |= (Color & 0xC0) >> (7 - (X*2+1)%8 );
-            break;
-        }
-        case 1:{
-            Paint.Image[Addr] &= ~( (0x80) >> (7 - X%8) );
-            Paint.Image[Addr] |= (Color & 0x80) >> (7 - X%8);
-            break;
-        }
-    }
+    Paint.Image[Addr] = Color;
 }
 
 /******************************************************************************
