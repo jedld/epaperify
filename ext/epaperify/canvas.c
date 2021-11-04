@@ -112,6 +112,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
     }
 
     UWORD Imagesize = 0;
+    printf("bpp %d", canvas->bpp);
     if (canvas->bpp == 1) {
         Imagesize = ((canvas->width % 8 == 0)? ( canvas->width / 8 ): ( canvas->width / 8 + 1)) * canvas->height;
     } else {
