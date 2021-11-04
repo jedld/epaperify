@@ -37,7 +37,7 @@ void EPD_IT8951_Init2(ecanvas *canvas, UWORD VCOM) {
     }
     printf("version: %s\n", LUT_Version);
     EPD_IT8951_Clear_Refresh(info, canvas_info->target_memory_addr, 0);
-
+    printf("done init\n");
 }
 
 VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
