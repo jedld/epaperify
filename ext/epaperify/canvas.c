@@ -127,7 +127,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
         printf("Failed to apply for red memory...\r\n");
         return -1;
     }
-    printf("allocating new image %d\n", Imagesize);
+    printf("allocating new image %d %d %d\n", canvas->width, canvas->height, Imagesize);
     canvas->interface.new_image(canvas->black_image, canvas->width , canvas->height, canvas->rotation, WHITE);
     canvas->interface.new_image(canvas->red_image, canvas->width, canvas->height, canvas->rotation, WHITE);
     Paint_SelectImage(canvas->black_image);
