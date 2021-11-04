@@ -73,7 +73,7 @@ typedef struct IT8951_Dev_Info
 
 typedef struct IT8951Info
 {
-    UWORD target_memory_addr;
+    UDOUBLE target_memory_addr;
     UWORD A2_Mode;
     bool Four_Byte_Align;
 } IT8951_Canvas_Info;
