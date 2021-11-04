@@ -115,7 +115,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
     if (canvas->bpp = 1) {
         Imagesize = ((canvas->width % 8 == 0)? ( canvas->width / 8 ): ( canvas->width / 8 + 1)) * canvas->height;
     } else {
-        Imagesize = ((canvas->width * canvas->bpp % 8 == 0)? (canvas->width * canvas->bpp / 8 ): (canvas->width * canvas->bpp / 8 + 1)) * canvas->height;
+        Imagesize = canvas->width * canvas->height;
     }
     
     if((canvas->black_image = (UBYTE *)malloc(Imagesize)) == NULL) {
