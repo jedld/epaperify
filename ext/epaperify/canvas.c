@@ -88,7 +88,7 @@ VALUE initialize(VALUE self, VALUE model, VALUE rotation, VALUE extra) {
            break;
         case EPD_IT8951:
            canvas->interface.bcm2835_init = &DEV_Module_Init_IT8951;
-           canvas->interface.display2 = &EPD_IT8951_4bp_Refresh;
+           canvas->interface.display2 = &EPD_IT8951_8bp_Refresh;
            canvas->interface.init_func2 = &EPD_IT8951_Init2;
            canvas->interface.sleep = &EPD_IT8951_Sleep;
            canvas->interface.new_image = &Paint_NewImage2;
