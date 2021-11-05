@@ -51,7 +51,7 @@ module Epaperify
     private
 
     def is_word_char?(c)
-      !["\n", "\r", " "].include?(c)
+      !["\n", "\r", " ", "\t"].include?(c)
     end
 
     def render(x, y, canvas, options = {}, &block)
@@ -96,6 +96,7 @@ module Epaperify
           inside_word = false
         end
       end
+
       newline = false
       @string.each_char.with_index do |c, index|
         if c == " " && newline
@@ -116,6 +117,8 @@ module Epaperify
               x_point = x + left_margin
               y_point += y_advance + ln_padding
           elsif (x_point + font_render.advance_width + chr_padding) > (max_width - right_margin)
+            next if c == " " # no need to move to a new line if it is a space
+
             x_point = x + left_margin
             y_point +=  y_advance + ln_padding
           end
