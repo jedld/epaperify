@@ -23,8 +23,13 @@ module Epaperify
       @string = str
 
       str.each_char do |c|
-        @font_cache[c.ord] ||= begin
-          @font.render_font(c.ord)
+        begin
+          @font_cache[c.ord] ||= begin
+            @font.render_font(c.ord)
+          end
+        rescue ArgumentError => e
+          puts e.backtrace.join("\n")
+          puts "argument error with #{c}"
         end
       end
     end
