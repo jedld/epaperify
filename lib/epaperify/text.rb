@@ -82,66 +82,72 @@ module Epaperify
       current_boundary = nil
 
       @string.each_char.with_index do |c, index|
-        if is_word_char?(c)
-          font_render = @font_cache[c.ord]
-          if !inside_word
-            current_boundary = {
-              character_count: 1,
-              width: font_render.advance_width
-            }
+        begin
+          if is_word_char?(c)
+            font_render = @font_cache[c.ord]
+            if !inside_word
+              current_boundary = {
+                character_count: 1,
+                width: font_render.advance_width
+              }
 
-            word_boundaries[index] = current_boundary
-          else
-            current_boundary[:character_count] += 1
-            current_boundary[:width] += font_render.advance_width
+              word_boundaries[index] = current_boundary
+            else
+              current_boundary[:character_count] += 1
+              current_boundary[:width] += font_render.advance_width
+            end
+            inside_word = true
+          elsif inside_word
+            # measure word width
+            inside_word = false
           end
-          inside_word = true
-        elsif inside_word
-          # measure word width
-          inside_word = false
+        rescue ArgumentError => e
         end
       end
 
       newline = false
       @string.each_char.with_index do |c, index|
-        if c == " " && newline
-          next
-        elsif c == "\n"
-          x_point = left_margin
-          y_point +=  y_advance + ln_padding
-          newline = true
-        elsif c == "\t"
-          x_point += 4 * @space_width
-        else
-          newline = false
-          font_render = @font_cache[c.ord]
-
-          #bounds limits check
-          if word_boundaries.key?(index) && max_width &&
-            (x_point + word_boundaries.dig(index, :width) > max_width - right_margin)
-              x_point = x + left_margin
-              y_point += y_advance + ln_padding
-          elsif (x_point + font_render.advance_width + chr_padding) > (max_width - right_margin)
-            next if c == " " # no need to move to a new line if it is a space
-
-            x_point = x + left_margin
+        begin
+          if c == " " && newline
+            next
+          elsif c == "\n"
+            x_point = left_margin
             y_point +=  y_advance + ln_padding
+            newline = true
+          elsif c == "\t"
+            x_point += 4 * @space_width
+          else
+            newline = false
+            font_render = @font_cache[c.ord]
+
+            #bounds limits check
+            if word_boundaries.key?(index) && max_width &&
+              (x_point + word_boundaries.dig(index, :width) > max_width - right_margin)
+                x_point = x + left_margin
+                y_point += y_advance + ln_padding
+            elsif (x_point + font_render.advance_width + chr_padding) > (max_width - right_margin)
+              next if c == " " # no need to move to a new line if it is a space
+
+              x_point = x + left_margin
+              y_point +=  y_advance + ln_padding
+            end
+
+            if y_point > max_height - bottom_margin
+              x_point = x + left_margin
+              y_point = y + top_margin
+            end
+
+            if block_given?
+              yield x_point, y_point, font_render
+            end
+
+            x_point += font_render.advance_width + chr_padding
           end
 
-          if y_point > max_height - bottom_margin
-            x_point = x + left_margin
-            y_point = y + top_margin
-          end
-
-          if block_given?
-            yield x_point, y_point, font_render
-          end
-
-          x_point += font_render.advance_width + chr_padding
-         end
-
-         max_x = [max_x, x_point].max
-         max_y = [max_y, y_point].max
+          max_x = [max_x, x_point].max
+          max_y = [max_y, y_point].max
+        rescue ArgumentError => e
+        end
       end
 
       [x_point - left_margin, y_point - top_margin, max_x, max_y]
