@@ -34,4 +34,4 @@ end
 
 require "epaperify/epaperify"
 require "epaperify/text"
-require "epaprify/view"
+require "epaperify/view"
