@@ -1,5 +1,5 @@
 module Epaperify
-  class Text
+  class Text < View
     def initialize(font)
       @font = font
       @font_cache = {}
@@ -96,14 +96,18 @@ module Epaperify
           inside_word = false
         end
       end
-
+      newline = false
       @string.each_char.with_index do |c, index|
-        if c == "\n"
+        if c == " " && newline
+          next
+        elsif c == "\n"
           x_point = left_margin
           y_point +=  y_advance + ln_padding
+          newline = true
         elsif c == "\t"
           x_point += 4 * @space_width
         else
+          newline = false
           font_render = @font_cache[c.ord]
 
           #bounds limits check
