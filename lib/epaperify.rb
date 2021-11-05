@@ -32,6 +32,6 @@ module Epaperify
   end
 end
 
+require "epaperify/view"
 require "epaperify/epaperify"
 require "epaperify/text"
-require "epaperify/view"

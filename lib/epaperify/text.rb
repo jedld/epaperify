@@ -1,5 +1,5 @@
 module Epaperify
-  class Text < View
+  class Text
     def initialize(font)
       @font = font
       @font_cache = {}
